@@ -1,0 +1,15 @@
+{
+  "name": "@hanzo/trust-goja",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Self-contained goja bundle of the Hanzo trust plugin — control inventory, coverage and evidence, hosted in-process by hanzoai/cloud (HIP-0106). Source of truth: ../controls.json, ../frameworks.json, src/*.ts; artifact: bundle.js.",
+  "scripts": {
+    "build": "node build.mjs",
+    "test": "node build.mjs && node test/run.mjs",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "esbuild": "0.28.1"
+  }
+}

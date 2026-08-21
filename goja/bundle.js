@@ -950,7 +950,7 @@ leased through a grant rather than published"
     }
     return ["unknown section " + kind];
   }
-  function write(kind, id, body, at) {
+  function write(kind, id, body, at, ord) {
     if (!isKind(kind)) return { ok: false, status: 404, message: "no trust section " + kind };
     const k = kind;
     if (!body || typeof body !== "object" || Array.isArray(body)) {
@@ -972,8 +972,6 @@ in git and cannot be authored through the API"
       return { ok: false, status: 400, message: "the " + k + " is malformed", errors };
     }
     if (k === "document" && !has(data.tier)) data.tier = "gated";
-    const ord = typeof data.ord === "number" ? data.ord : 0;
-    delete data.ord;
     put(k, key, ord, data, at);
     return { ok: true, wrote: { kind: k, id: key, updated: at } };
   }
@@ -1342,7 +1340,9 @@ iles the inventory names, not from the trail",
     "section.put": (ctx, req) => {
       const kind = ctx.params.kind || "";
       const at = now();
-      const r = write(kind, ctx.params.id || "", req.body, at);
+      const env = req.body || {};
+      const ord = typeof env.ord === "number" ? env.ord : 0;
+      const r = write(kind, ctx.params.id || "", env.data, at, ord);
       if (!r.ok) {
         const body = { success: false, message: r.message };
         if (r.errors) body.errors = r.errors;

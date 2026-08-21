@@ -150,7 +150,13 @@ const routes: Record<string, Handler> = {
   "section.put": (ctx, req) => {
     const kind = ctx.params.kind || "";
     const at = now();
-    const r = write(kind, ctx.params.id || "", req.body, at);
+    // The body is an ENVELOPE — { ord, data } — because the record itself is an
+    // open object and the host binds the section and the id from the URL onto a
+    // struct. `data` is the record; `ord` is where the organization wants it in
+    // its own section.
+    const env = (req.body || {}) as Record<string, unknown>;
+    const ord = typeof env.ord === "number" ? (env.ord as number) : 0;
+    const r = write(kind, ctx.params.id || "", env.data, at, ord);
     if (!r.ok) {
       const body: Record<string, unknown> = { success: false, message: r.message };
       if (r.errors) body.errors = r.errors;

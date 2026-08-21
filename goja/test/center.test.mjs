@@ -13,8 +13,10 @@ const ORG = "acme";
 const call = (handle, route, opts = {}) =>
   handle({ route, method: opts.method || "GET", params: opts.params || {}, orgId: opts.org ?? ORG, body: opts.body });
 
-const put = (handle, kind, id, body) =>
-  call(handle, "section.put", { method: "PUT", params: { kind, id }, body });
+// The write body is an ENVELOPE — { ord, data } — because the record is an open
+// object and the host binds the section and the id from the URL onto a struct.
+const put = (handle, kind, id, data, ord = 0) =>
+  call(handle, "section.put", { method: "PUT", params: { kind, id }, body: { ord, data } });
 
 // A tenant that is NOT the inventory's owner — a customer, on their first
 // request. This is the case a single-tenant page never exercises and the one a

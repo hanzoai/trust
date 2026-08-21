@@ -50,7 +50,7 @@ it("a write to a READ route is refused with the reason, not merely missing", () 
 it("a write route answers its own method and no other", () => {
   const { handle } = load();
   const params = { kind: "faq", id: "q1" };
-  const body = { question: "Where does the data live?", answer: "In our own cloud." };
+  const body = { data: { question: "Where does the data live?", answer: "In our own cloud." } };
   for (const method of ["GET", "POST", "PATCH", "DELETE"]) {
     const res = handle({ route: "section.put", method, params, orgId: ORG, body });
     assert.equal(res.status, 405, method);

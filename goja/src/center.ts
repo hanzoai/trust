@@ -184,6 +184,7 @@ export function write(
   id: string,
   body: unknown,
   at: number,
+  ord: number,
 ): { ok: true; wrote: Written } | { ok: false; status: number; message: string; errors?: string[] } {
   if (!isKind(kind)) return { ok: false, status: 404, message: "no trust section " + kind };
   const k = kind as Kind;
@@ -217,8 +218,6 @@ export function write(
   // row written before a tier existed is still gated when it is read.
   if (k === "document" && !has(data.tier)) data.tier = "gated";
 
-  const ord = typeof data.ord === "number" ? (data.ord as number) : 0;
-  delete data.ord;
   put(k, key, ord, data, at);
   return { ok: true, wrote: { kind: k, id: key, updated: at } };
 }

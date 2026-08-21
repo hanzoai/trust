@@ -738,7 +738,7 @@ t`);
   // src/inventory.ts
   var CONTROLS = define_CONTROLS_default;
   var FRAMEWORKS = define_FRAMEWORKS_default;
-  var VERSION = "0.2.0";
+  var VERSION = "0.2.2";
   function ids() {
     const out = [];
     for (const k in FRAMEWORKS) {

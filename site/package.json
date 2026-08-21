@@ -1,0 +1,32 @@
+{
+  "name": "@hanzo/trust-site",
+  "version": "0.1.0",
+  "private": true,
+  "description": "trust.hanzo.ai — the trust centre, prerendered shell over a runtime read of /v1/trust",
+  "scripts": {
+    "dev": "next dev --port 3005",
+    "build": "next build",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@hanzo/gui": "8.1.1",
+    "@hanzo/logo": "^1.0.20",
+    "@hanzo/ui": "8.1.6",
+    "@hanzogui/config": "8.1.1",
+    "@hanzogui/lucide-icons-2": "8.1.1",
+    "@hanzogui/next-theme": "8.1.1",
+    "@hanzogui/web": "8.1.1",
+    "next": "^15.3.0",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0",
+    "react-native-svg": "^15.15.5",
+    "react-native-web": "^0.21.2"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.2",
+    "@types/react": "^19.0.1",
+    "@types/react-dom": "^19.0.2",
+    "typescript": "^5.9.3"
+  },
+  "packageManager": "pnpm@10.16.1"
+}

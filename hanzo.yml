@@ -1,0 +1,56 @@
+# Canonical CI/CD config for hanzoai/trust — read by the shared hanzoai/ci
+# reusable workflow (.hanzo/workflows/cicd.yml) and by platform.hanzo.ai.
+#
+# NO `images:` and NO `deploy:`, deliberately. This repo ships two things and
+# neither is a container: a Go module hanzoai/cloud embeds (the goja bundle,
+# consumed by version, not by a pull) and a static export the edge serves.
+# Declaring an image would build an artifact nothing runs.
+
+test:
+  # The bundle is a COMMITTED artifact the Go embed reads, so "edited
+  # controls.json, forgot to rebuild" is a real way to ship a stale score. The
+  # suite rebuilds in memory and compares, which is what catches it — and it
+  # runs against the built bundle in a bare node:vm, so what passes is the
+  # thing that ships rather than the TypeScript it came from.
+  #
+  # It must run from goja/: esbuild records source paths relative to the
+  # working directory, so the same source built from the repo root produces
+  # different bytes and the staleness case fails on a build that was correct.
+  - name: bundle
+    run: |
+      cd goja
+      npm ci
+      npm test
+      npx tsc --noEmit
+
+  # The embed, and the schema the bundle's SQL is written against.
+  - name: embed
+    run: go build ./... && go vet ./...
+
+  # The copy gate. This repo names three frameworks on nearly every page it
+  # serves, so it is the one most able to claim something we do not hold — and
+  # the bundle is a tracked .js the gate reads, inventory prose included.
+  - name: claims
+    run: |
+      git clone --depth 1 https://git.hanzo.ai/hanzoai/ci /tmp/ci
+      /tmp/ci/bin/certclaims .
+
+  # The page's own types. The build below is the rest of its gate.
+  - name: site
+    run: |
+      corepack enable
+      pnpm --dir site install --frozen-lockfile
+      pnpm --dir site typecheck
+
+# trust.hanzo.ai. The page reads /v1/trust at RUNTIME, so the export is a shell
+# and the numbers are never baked into it — a trust page compiled from a
+# snapshot is stale the moment a control changes, which is the failure this
+# whole repo exists to refuse.
+site:
+  slug: trust
+  dir: site/out
+  build: corepack enable && pnpm --dir site install --frozen-lockfile && pnpm --dir site build
+  on: [main]
+
+kms:
+  org: hanzo

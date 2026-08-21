@@ -1,0 +1,77 @@
+/**
+ * The one stylesheet.
+ *
+ * The identity is @hanzo/ui's — plain custom properties, dark at bare `:root`.
+ * The components are @hanzo/ui's too, and they carry their own layout through
+ * gui style props, so what is left here is only what a component cannot know:
+ * how far a heading sits below a sticky header, and how a strip of section links
+ * scrolls on a phone. Six rules. No utility framework, nothing fighting the
+ * cascade.
+ */
+@import '@hanzo/ui/theme.css';
+
+/* The product layer's own sheet: `hz-skeleton`'s shimmer, and the tabular/mono
+   faces DataTable typesets numeric cells with. It travels with the components. */
+@import '@hanzo/ui/styles/motion.css';
+
+:root {
+  /* next/font binds Geist in app/layout.tsx; theme.css reads exactly these two
+     names, so nothing downstream ever states a family. */
+  --font-geist-sans-provided: var(--geist-sans);
+  --font-geist-mono-provided: var(--geist-mono);
+
+  --head: 3.5rem;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  min-height: 100svh;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+svg {
+  display: block;
+  flex: none;
+}
+
+/* A section link lands the heading below the sticky header, not under it. */
+section[id] {
+  scroll-margin-top: calc(var(--head) + 1rem);
+}
+
+/* The section index. One row at every width: it runs off the side of a phone
+   and is dragged, rather than wrapping to three lines and pushing the page
+   down. The bar itself is the affordance, so its scrollbar is not drawn. */
+.rail {
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.rail::-webkit-scrollbar {
+  display: none;
+}
+
+/* A repository path has no spaces to break at and is longer than a phone. */
+.path {
+  overflow-wrap: anywhere;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+}

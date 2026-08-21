@@ -52,6 +52,9 @@ export function Chrome({
           ) : null}
         </XStack>
 
+        {/* No sections, no strip — an empty rail is a band of dead space under
+            the mark, and the header should just be the mark. */}
+        {items.length === 0 ? null : (
         <XStack className="rail" px="$4" pb="$2.5" gap="$1">
           {items.map((i) => {
             const at = i.id === here;
@@ -80,6 +83,7 @@ export function Chrome({
             );
           })}
         </XStack>
+        )}
       </YStack>
     </header>
   );

@@ -102,7 +102,9 @@ export default function Page() {
   return (
     <YStack minH="100svh" bg="$background">
       <Chrome
-        items={NAV}
+        // No document, no index: an anchor strip over nine sections that are not
+        // on the page is nine links that do nothing.
+        items={answer.at === 'ready' ? NAV : []}
         here={here}
         contact={answer.at === 'ready' ? (answer.center.profile.contact ?? answer.center.profile.access) : undefined}
       />

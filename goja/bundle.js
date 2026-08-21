@@ -24,250 +24,253 @@
   var __spreadProps = (a, b) => __defProps(a, __getOwnPropDescs(b));
 
   // <define:__CONTROLS__>
-  var define_CONTROLS_default = [{ id: "iam.issuer", claim: "Hanzo IAM issues every credential, and \
-signing in is an OIDC redirect rather than a form any application holds.", mechanism: "The authoriza\
-tion endpoint validates the request and returns a code; a single mint path turns that code into toke\
-ns. Everything else in the estate consumes tokens rather than issuing them.", status: "partial", note: "\
-Partial for scope, not for quality. The redirect flow and the single mint path are both there to rea\
-d. Establishing that NOTHING else in the estate issues a credential means auditing every service for\
- a second path, and that sweep has not been done \u2014 so the narrower word is the honest one.", enforced: [
+  var define_CONTROLS_default = [{ id: "iam.issuer", category: "access", claim: "Hanzo IAM issues ev\
+ery credential, and signing in is an OIDC redirect rather than a form any application holds.", mechanism: "\
+The authorization endpoint validates the request and returns a code; a single mint path turns that c\
+ode into tokens. Everything else in the estate consumes tokens rather than issuing them.", status: "\
+partial", note: "Partial for scope, not for quality. The redirect flow and the single mint path are \
+both there to read. Establishing that NOTHING else in the estate issues a credential means auditing \
+every service for a second path, and that sweep has not been done \u2014 so the narrower word is the hone\
+st one.", enforced: [{ repo: "hanzoai/iam", path: "internal/oidc/authorize.go", symbol: "Authorize" },
+  { repo: "hanzoai/iam", path: "internal/oidc/mint.go", symbol: "mint" }], verified: [{ method: "rea\
+d", at: [{ repo: "hanzoai/iam", path: "internal/oidc/authorize.go", symbol: "Authorize" }, { repo: "\
+hanzoai/iam", path: "internal/oidc/mint.go", symbol: "mint" }], detail: "The redirect flow and the s\
+ingle mint choke point were read in the source. Rows under issue-user-token, mint-user-keys, revoke-\
+user-keys, token-exchange evidence this. Every credential the platform issues, rotates or revokes le\
+aves a row under a reserved action." }, { method: "audit", actions: ["issue-user-token", "mint-user-\
+keys", "revoke-user-keys", "token-exchange"] }], maps: [{ clause: "soc2:CC6.1", strength: "partial" },
+  { clause: "soc2:CC6.2", strength: "partial" }, { clause: "soc2:CC6.3", strength: "partial" }, { clause: "\
+iso27001:A.5.15", strength: "partial" }, { clause: "iso27001:A.5.16", strength: "partial" }, { clause: "\
+iso27001:A.5.17", strength: "partial" }, { clause: "nist80053:IA", strength: "partial" }, { clause: "\
+nist80053:AC", strength: "partial" }] }, { id: "iam.pkce.s256", category: "access", claim: "A client\
+ with no registered secret must present a challenge, and only the hashed method is accepted \u2014 offeri\
+ng the plain method is refused rather than quietly downgraded.", mechanism: "A public client arrivin\
+g with no challenge is refused at the authorization endpoint. An explicitly supplied method other th\
+an the hashed one is refused there, at the mint path, and at the token endpoint; the verifier compar\
+es against a single constant. Discovery advertises the hashed method alone.", status: "automated", enforced: [
   { repo: "hanzoai/iam", path: "internal/oidc/authorize.go", symbol: "Authorize" }, { repo: "hanzoai\
-/iam", path: "internal/oidc/mint.go", symbol: "mint" }], verified: [{ method: "read", at: [{ repo: "\
-hanzoai/iam", path: "internal/oidc/authorize.go", symbol: "Authorize" }, { repo: "hanzoai/iam", path: "\
-internal/oidc/mint.go", symbol: "mint" }], detail: "The redirect flow and the single mint choke poin\
-t were read in the source. Rows under issue-user-token, mint-user-keys, revoke-user-keys, token-exch\
-ange evidence this. Every credential the platform issues, rotates or revokes leaves a row under a re\
-served action." }, { method: "audit", actions: ["issue-user-token", "mint-user-keys", "revoke-user-k\
-eys", "token-exchange"] }], maps: [{ clause: "soc2:CC6.1", strength: "partial" }, { clause: "soc2:CC\
-6.2", strength: "partial" }, { clause: "soc2:CC6.3", strength: "partial" }, { clause: "iso27001:A.5.\
-15", strength: "partial" }, { clause: "iso27001:A.5.16", strength: "partial" }, { clause: "iso27001:\
-A.5.17", strength: "partial" }, { clause: "nist80053:IA", strength: "partial" }, { clause: "nist8005\
-3:AC", strength: "partial" }] }, { id: "iam.pkce.s256", claim: "A client with no registered secret m\
-ust present a challenge, and only the hashed method is accepted \u2014 offering the plain method is refus\
-ed rather than quietly downgraded.", mechanism: "A public client arriving with no challenge is refus\
-ed at the authorization endpoint. An explicitly supplied method other than the hashed one is refused\
- there, at the mint path, and at the token endpoint; the verifier compares against a single constant\
-. Discovery advertises the hashed method alone.", status: "automated", enforced: [{ repo: "hanzoai/i\
-am", path: "internal/oidc/authorize.go", symbol: "Authorize" }, { repo: "hanzoai/iam", path: "intern\
-al/oidc/pkce.go", symbol: "VerifyChallenge" }, { repo: "hanzoai/iam", path: "internal/oidc/oidc.go",
-  symbol: "Discovery" }], verified: [{ method: "read", at: [{ repo: "hanzoai/iam", path: "internal/o\
-idc/authorize.go", symbol: "Authorize" }, { repo: "hanzoai/iam", path: "internal/oidc/pkce.go", symbol: "\
-VerifyChallenge" }, { repo: "hanzoai/iam", path: "internal/oidc/oidc.go", symbol: "Discovery" }], detail: "\
-Three refusal sites were read: the authorization endpoint, the mint path and the verifier. Two bound\
-aries are worth knowing \u2014 an OMITTED method defaults to the hashed one rather than being refused, so\
- the method parameter is optional while the challenge is not; and the device-code grant has no chall\
-enge branch at all." }], maps: [{ clause: "soc2:CC6.1", strength: "full" }, { clause: "soc2:CC6.6", strength: "\
-full" }, { clause: "iso27001:A.8.5", strength: "full" }, { clause: "iso27001:A.8.24", strength: "ful\
-l" }, { clause: "nist80053:IA", strength: "full" }, { clause: "nist80053:SC", strength: "full" }] },
-  { id: "iam.password.argon2id", claim: "New passwords are hashed with a memory-hard function at 64 \
-MiB and two passes with a random salt, the cost parameters ride inside the stored digest, and an unr\
-ecognised scheme fails closed.", mechanism: "One credential package owns hashing. It writes a digest\
- carrying memory, passes and parallelism, so raising the cost later does not lock anyone out. Verifi\
-cation reads the scheme off the row and refuses anything outside the supported set; the terminal pat\
-h returns false rather than falling through.", status: "automated", enforced: [{ repo: "hanzoai/iam",
-  path: "internal/cred/cred.go", symbol: "CreateHash" }, { repo: "hanzoai/iam", path: "internal/user\
-s/users.go", symbol: "CheckPassword" }], verified: [{ method: "read", at: [{ repo: "hanzoai/iam", path: "\
-internal/cred/cred.go", symbol: "CreateHash" }, { repo: "hanzoai/iam", path: "internal/users/users.g\
-o", symbol: "CheckPassword" }], detail: "The parameter block reads 64 MiB memory, 2 iterations, 16-b\
-yte salt, 32-byte key, and the digest is written in the standard parameterised form. An older scheme\
- remains an accepted VERIFY path so legacy rows still authenticate; every new or updated digest uses\
- the memory-hard one. The doc comment on the user record describes this backwards \u2014 the prose is sta\
-le, the code is not." }], maps: [{ clause: "soc2:CC6.1", strength: "full" }, { clause: "iso27001:A.5\
-.17", strength: "full" }, { clause: "iso27001:A.8.24", strength: "full" }, { clause: "nist80053:IA",
-  strength: "full" }, { clause: "nist80053:SC", strength: "full" }] }, { id: "iam.token.algorithms",
-  claim: "Bearer tokens verify against a closed list of signing algorithms. Symmetric signing and th\
-e none algorithm are absent from it, so no forged header can select a path where the verifying key i\
-s also the signing key.", mechanism: "One accepted-algorithms list is handed to the parser as its va\
-lid-methods option on the single verification path. The post-quantum signature method is registered \
-against a real implementation, not a placeholder, and is in the default build.", status: "automated",
-  enforced: [{ repo: "hanzoai/iam", path: "internal/oidc/verify.go", symbol: "acceptedAlgs" }, { repo: "\
-hanzoai/iam", path: "internal/oidc/mldsa.go", symbol: "init" }, { repo: "hanzoai/iam", path: "intern\
-al/authz/authz_http_test.go" }], verified: [{ method: "read", at: [{ repo: "hanzoai/iam", path: "int\
-ernal/oidc/verify.go", symbol: "acceptedAlgs" }, { repo: "hanzoai/iam", path: "internal/oidc/mldsa.g\
-o", symbol: "init" }, { repo: "hanzoai/iam", path: "internal/authz/authz_http_test.go" }], detail: "\
-A test at internal/authz/authz_http_test.go asserts this. A test forges a symmetrically-signed token\
- and asserts it is refused at parse. The list carries two RSA variants, three NIST curves and one la\
-ttice scheme; the remaining RSA variants and the probabilistic-padding series are not accepted. Toke\
-ns from a federated provider are checked against a SEPARATE closed list with slightly different memb\
-ers." }], maps: [{ clause: "soc2:CC6.1", strength: "full" }, { clause: "soc2:CC6.6", strength: "full" },
-  { clause: "iso27001:A.8.5", strength: "full" }, { clause: "iso27001:A.8.24", strength: "full" }, {
-  clause: "nist80053:IA", strength: "full" }, { clause: "nist80053:SC", strength: "full" }] }, { id: "\
-iam.refresh.rotation", claim: "Refresh tokens are single-use. Spending one mints a successor in the \
-same family; presenting a spent one deletes every token in that family, the working successor includ\
-ed.", mechanism: "Redemption marks the row consumed before the successor is issued, and the successo\
-r inherits the family id set when the grant was established. A request carrying an already-consumed \
-token revokes the family and answers with a grant error.", status: "automated", enforced: [{ repo: "\
-hanzoai/iam", path: "internal/oidc/refresh.go", symbol: "Refresh" }], verified: [{ method: "read", at: [
-  { repo: "hanzoai/iam", path: "internal/oidc/refresh.go", symbol: "Refresh" }], detail: "The consum\
-ed flag is set before the successor is minted, and the family cascade DELETES rows rather than only \
-flagging them. One caveat: the cascade is best-effort \u2014 it swallows the list error and ignores each \
-delete error while still refusing the caller \u2014 so a partial revocation fails quietly and only the ca\
-ller's refusal is guaranteed." }], maps: [{ clause: "soc2:CC6.1", strength: "full" }, { clause: "soc\
-2:CC7.2", strength: "full" }, { clause: "iso27001:A.5.17", strength: "full" }, { clause: "iso27001:A\
-.8.16", strength: "full" }, { clause: "nist80053:IA", strength: "full" }, { clause: "nist80053:SI", strength: "\
-full" }] }, { id: "iam.mfa.sessions", claim: "Adding a second factor, removing one, or changing whic\
-h is preferred drops every other session and clears the remember-this-device window.", mechanism: "A\
-ll three mutations run through one save path, which revokes every session but the calling one and bl\
-anks the remember deadline and its digest. A session id pruned from the row is treated as revoked on\
- its next resolve.", status: "automated", enforced: [{ repo: "hanzoai/iam", path: "internal/mfa/mfa.\
-go", symbol: "save" }, { repo: "hanzoai/iam", path: "internal/sessions/resolve.go", symbol: "RevokeO\
-thers" }], verified: [{ method: "read", at: [{ repo: "hanzoai/iam", path: "internal/mfa/mfa.go", symbol: "\
-save" }, { repo: "hanzoai/iam", path: "internal/sessions/resolve.go", symbol: "RevokeOthers" }], detail: "\
-One shared save path revokes other sessions and clears the remember window. Worth knowing: this revo\
-kes BROWSER SESSIONS. Access and refresh tokens already outstanding for that user are not revoked he\
-re, so a token issued before the change keeps working until it expires or its family is revoked by a\
-nother route." }], maps: [{ clause: "soc2:CC6.1", strength: "full" }, { clause: "soc2:CC6.3", strength: "\
-full" }, { clause: "iso27001:A.5.17", strength: "full" }, { clause: "iso27001:A.8.5", strength: "ful\
-l" }, { clause: "nist80053:IA", strength: "full" }, { clause: "nist80053:AC", strength: "full" }] },
-  { id: "iam.scim.users", claim: "A directory provisions users over the standard protocol \u2014 create, \
-update, replace, deactivate, delete, with filter and patch. Someone removed from your directory lose\
-s their account by that act.", mechanism: "A provisioning surface routes the full user lifecycle and\
- publishes its service-provider configuration, schemas and resource types for a client to discover.",
-  status: "automated", enforced: [{ repo: "hanzoai/iam", path: "internal/scim/scim.go", symbol: "Rou\
-te" }, { repo: "hanzoai/iam", path: "internal/scim/schemas.go", symbol: "ServiceProviderConfig" }], verified: [
-  { method: "read", at: [{ repo: "hanzoai/iam", path: "internal/scim/scim.go", symbol: "Route" }, { repo: "\
-hanzoai/iam", path: "internal/scim/schemas.go", symbol: "ServiceProviderConfig" }], detail: "The use\
-r lifecycle routes are all present. The published capabilities declare bulk, sort and etag as false,\
- so a client is told what is missing rather than discovering it at runtime." }], maps: [{ clause: "s\
-oc2:CC6.2", strength: "full" }, { clause: "soc2:CC6.3", strength: "full" }, { clause: "iso27001:A.5.\
-16", strength: "full" }, { clause: "iso27001:A.5.18", strength: "full" }, { clause: "iso27001:A.6.5",
-  strength: "full" }, { clause: "nist80053:AC", strength: "full" }, { clause: "nist80053:PS", strength: "\
-full" }] }, { id: "iam.scim.groups", claim: "Group membership arrives from a customer directory and \
-drives role assignment.", mechanism: "None. There is no group route, no handler, and no group resour\
-ce type \u2014 the published resource-type set has exactly one member.", status: "absent", note: "Ab\
-sent, not stubbed. Role assignment cannot be driven from a customer directory today: users provision\
-, group membership does not. A request for the group collection answers a plain 404 rather than a pr\
-otocol error document, because the published-resource path covers only schema and resource-type look\
-ups.", enforced: [{ repo: "hanzoai/iam", path: "internal/scim/schemas.go", symbol: "resourceTypes" }],
-  verified: [{ method: "read", at: [{ repo: "hanzoai/iam", path: "internal/scim/schemas.go", symbol: "\
-resourceTypes" }], detail: "The resource-type list has one member, User. No group handler exists und\
-er any spelling." }], maps: [{ clause: "soc2:CC6.3", strength: "partial" }, { clause: "iso27001:A.5.\
-18", strength: "partial" }, { clause: "nist80053:AC", strength: "partial" }] }, { id: "iam.passkey.s\
-ignin", claim: "A registered passkey can be used to sign in.", mechanism: "None in the running build\
-. Passkey credentials can be registered and managed, and there is no assertion ceremony to challenge\
- one \u2014 no begin-login route of any spelling exists.", status: "absent", note: "The capability f\
-lag returns false and the login descriptor is masked, so no screen offers passkey sign-in. That is t\
-he only honest thing a login screen can do about a method the server cannot perform. Second factors \
-that do work: an authenticator app, SMS and email, with recovery codes.", enforced: [{ repo: "hanzoa\
-i/iam", path: "pkg/schema/passkey.go", symbol: "PasskeySignin" }, { repo: "hanzoai/iam", path: "inte\
-rnal/webauthn/webauthn.go", symbol: "Route" }, { repo: "hanzoai/iam", path: "internal/oidc/frontdoor\
-_passkey_test.go" }], verified: [{ method: "read", at: [{ repo: "hanzoai/iam", path: "pkg/schema/pas\
-skey.go", symbol: "PasskeySignin" }, { repo: "hanzoai/iam", path: "internal/webauthn/webauthn.go", symbol: "\
-Route" }, { repo: "hanzoai/iam", path: "internal/oidc/frontdoor_passkey_test.go" }], detail: "A test\
- at internal/oidc/frontdoor_passkey_test.go asserts this. A test names the four candidate ceremony p\
-aths and asserts all four answer 404. The credential surface offers registration and management only\
-." }], maps: [{ clause: "soc2:CC6.1", strength: "partial" }, { clause: "iso27001:A.8.5", strength: "\
-partial" }, { clause: "nist80053:IA", strength: "partial" }] }, { id: "authz.path.grant", claim: "A \
-resource has a path, and a grant covers a path and everything below it, so org-wide access, one work\
-space, and a narrowed agent credential all fall out of one check.", mechanism: "One authorization fu\
-nction tests the requested path against the paths a caller holds, admitting a path and its descendan\
-ts.", status: "partial", note: "The containment model is real and it is one function. What it is bui\
-lt on is a byte-by-byte prefix comparison, which does not do what the model needs \u2014 that is recorded\
- separately as authz.path.segment, and it is why this is partial rather than automated.", enforced: [
-  { repo: "hanzoai/iam", path: "internal/authz/authz.go", symbol: "pathAuthorized" }], verified: [{ method: "\
-read", at: [{ repo: "hanzoai/iam", path: "internal/authz/authz.go", symbol: "pathAuthorized" }], detail: "\
-One function answers the containment question for every caller shape." }], maps: [{ clause: "soc2:CC\
-6.1", strength: "partial" }, { clause: "soc2:CC6.3", strength: "partial" }, { clause: "iso27001:A.5.\
-15", strength: "partial" }, { clause: "iso27001:A.5.18", strength: "partial" }, { clause: "iso27001:\
-A.8.3", strength: "partial" }, { clause: "nist80053:AC", strength: "partial" }] }, { id: "authz.path\
-.segment", claim: "A grant on one path does not cover a longer path that merely starts with the same\
- characters, because the comparison advances a segment at a time.", mechanism: "None. The comparison\
- is a byte prefix. The collisions someone already hit are handled by a separate exact-match table ra\
-ther than by making the comparison segment-wise.", status: "absent", note: "Recorded absent because \
-the mechanism named in the claim does not exist \u2014 not because path authorization is missing. The com\
-ment above the function records hitting this exact hazard, where one action name is a character pref\
-ix of another, and working around it with an exact-match map. That workaround covers the collisions \
-someone thought of; a segment walk would make the whole class impossible. A segment-wise implementat\
-ion exists elsewhere in the estate but is not on this path.", enforced: [{ repo: "hanzoai/iam", path: "\
+/iam", path: "internal/oidc/pkce.go", symbol: "VerifyChallenge" }, { repo: "hanzoai/iam", path: "int\
+ernal/oidc/oidc.go", symbol: "Discovery" }], verified: [{ method: "read", at: [{ repo: "hanzoai/iam",
+  path: "internal/oidc/authorize.go", symbol: "Authorize" }, { repo: "hanzoai/iam", path: "internal/\
+oidc/pkce.go", symbol: "VerifyChallenge" }, { repo: "hanzoai/iam", path: "internal/oidc/oidc.go", symbol: "\
+Discovery" }], detail: "Three refusal sites were read: the authorization endpoint, the mint path and\
+ the verifier. Two boundaries are worth knowing \u2014 an OMITTED method defaults to the hashed one rathe\
+r than being refused, so the method parameter is optional while the challenge is not; and the device\
+-code grant has no challenge branch at all." }], maps: [{ clause: "soc2:CC6.1", strength: "full" }, {
+  clause: "soc2:CC6.6", strength: "full" }, { clause: "iso27001:A.8.5", strength: "full" }, { clause: "\
+iso27001:A.8.24", strength: "full" }, { clause: "nist80053:IA", strength: "full" }, { clause: "nist8\
+0053:SC", strength: "full" }] }, { id: "iam.password.argon2id", category: "access", claim: "New pass\
+words are hashed with a memory-hard function at 64 MiB and two passes with a random salt, the cost p\
+arameters ride inside the stored digest, and an unrecognised scheme fails closed.", mechanism: "One \
+credential package owns hashing. It writes a digest carrying memory, passes and parallelism, so rais\
+ing the cost later does not lock anyone out. Verification reads the scheme off the row and refuses a\
+nything outside the supported set; the terminal path returns false rather than falling through.", status: "\
+automated", enforced: [{ repo: "hanzoai/iam", path: "internal/cred/cred.go", symbol: "CreateHash" },
+  { repo: "hanzoai/iam", path: "internal/users/users.go", symbol: "CheckPassword" }], verified: [{ method: "\
+read", at: [{ repo: "hanzoai/iam", path: "internal/cred/cred.go", symbol: "CreateHash" }, { repo: "h\
+anzoai/iam", path: "internal/users/users.go", symbol: "CheckPassword" }], detail: "The parameter blo\
+ck reads 64 MiB memory, 2 iterations, 16-byte salt, 32-byte key, and the digest is written in the st\
+andard parameterised form. An older scheme remains an accepted VERIFY path so legacy rows still auth\
+enticate; every new or updated digest uses the memory-hard one. The doc comment on the user record d\
+escribes this backwards \u2014 the prose is stale, the code is not." }], maps: [{ clause: "soc2:CC6.\
+1", strength: "full" }, { clause: "iso27001:A.5.17", strength: "full" }, { clause: "iso27001:A.8.24",
+  strength: "full" }, { clause: "nist80053:IA", strength: "full" }, { clause: "nist80053:SC", strength: "\
+full" }] }, { id: "iam.token.algorithms", category: "access", claim: "Bearer tokens verify against a\
+ closed list of signing algorithms. Symmetric signing and the none algorithm are absent from it, so \
+no forged header can select a path where the verifying key is also the signing key.", mechanism: "On\
+e accepted-algorithms list is handed to the parser as its valid-methods option on the single verific\
+ation path. The post-quantum signature method is registered against a real implementation, not a pla\
+ceholder, and is in the default build.", status: "automated", enforced: [{ repo: "hanzoai/iam", path: "\
+internal/oidc/verify.go", symbol: "acceptedAlgs" }, { repo: "hanzoai/iam", path: "internal/oidc/mlds\
+a.go", symbol: "init" }, { repo: "hanzoai/iam", path: "internal/authz/authz_http_test.go" }], verified: [
+  { method: "read", at: [{ repo: "hanzoai/iam", path: "internal/oidc/verify.go", symbol: "acceptedAl\
+gs" }, { repo: "hanzoai/iam", path: "internal/oidc/mldsa.go", symbol: "init" }, { repo: "hanzoai/iam",
+  path: "internal/authz/authz_http_test.go" }], detail: "A test at internal/authz/authz_http_test.go\
+ asserts this. A test forges a symmetrically-signed token and asserts it is refused at parse. The li\
+st carries two RSA variants, three NIST curves and one lattice scheme; the remaining RSA variants an\
+d the probabilistic-padding series are not accepted. Tokens from a federated provider are checked ag\
+ainst a SEPARATE closed list with slightly different members." }], maps: [{ clause: "soc2:CC6.1", strength: "\
+full" }, { clause: "soc2:CC6.6", strength: "full" }, { clause: "iso27001:A.8.5", strength: "full" },
+  { clause: "iso27001:A.8.24", strength: "full" }, { clause: "nist80053:IA", strength: "full" }, { clause: "\
+nist80053:SC", strength: "full" }] }, { id: "iam.refresh.rotation", category: "access", claim: "Refr\
+esh tokens are single-use. Spending one mints a successor in the same family; presenting a spent one\
+ deletes every token in that family, the working successor included.", mechanism: "Redemption marks \
+the row consumed before the successor is issued, and the successor inherits the family id set when t\
+he grant was established. A request carrying an already-consumed token revokes the family and answer\
+s with a grant error.", status: "automated", enforced: [{ repo: "hanzoai/iam", path: "internal/oidc/\
+refresh.go", symbol: "Refresh" }], verified: [{ method: "read", at: [{ repo: "hanzoai/iam", path: "i\
+nternal/oidc/refresh.go", symbol: "Refresh" }], detail: "The consumed flag is set before the success\
+or is minted, and the family cascade DELETES rows rather than only flagging them. One caveat: the ca\
+scade is best-effort \u2014 it swallows the list error and ignores each delete error while still refusing\
+ the caller \u2014 so a partial revocation fails quietly and only the caller's refusal is guaranteed." }],
+  maps: [{ clause: "soc2:CC6.1", strength: "full" }, { clause: "soc2:CC7.2", strength: "full" }, { clause: "\
+iso27001:A.5.17", strength: "full" }, { clause: "iso27001:A.8.16", strength: "full" }, { clause: "ni\
+st80053:IA", strength: "full" }, { clause: "nist80053:SI", strength: "full" }] }, { id: "iam.mfa.ses\
+sions", category: "access", claim: "Adding a second factor, removing one, or changing which is prefe\
+rred drops every other session and clears the remember-this-device window.", mechanism: "All three m\
+utations run through one save path, which revokes every session but the calling one and blanks the r\
+emember deadline and its digest. A session id pruned from the row is treated as revoked on its next \
+resolve.", status: "automated", enforced: [{ repo: "hanzoai/iam", path: "internal/mfa/mfa.go", symbol: "\
+save" }, { repo: "hanzoai/iam", path: "internal/sessions/resolve.go", symbol: "RevokeOthers" }], verified: [
+  { method: "read", at: [{ repo: "hanzoai/iam", path: "internal/mfa/mfa.go", symbol: "save" }, { repo: "\
+hanzoai/iam", path: "internal/sessions/resolve.go", symbol: "RevokeOthers" }], detail: "One shared s\
+ave path revokes other sessions and clears the remember window. Worth knowing: this revokes BROWSER \
+SESSIONS. Access and refresh tokens already outstanding for that user are not revoked here, so a tok\
+en issued before the change keeps working until it expires or its family is revoked by another route\
+." }], maps: [{ clause: "soc2:CC6.1", strength: "full" }, { clause: "soc2:CC6.3", strength: "full" },
+  { clause: "iso27001:A.5.17", strength: "full" }, { clause: "iso27001:A.8.5", strength: "full" }, {
+  clause: "nist80053:IA", strength: "full" }, { clause: "nist80053:AC", strength: "full" }] }, { id: "\
+iam.scim.users", category: "access", claim: "A directory provisions users over the standard protocol\
+ \u2014 create, update, replace, deactivate, delete, with filter and patch. Someone removed from your dir\
+ectory loses their account by that act.", mechanism: "A provisioning surface routes the full user li\
+fecycle and publishes its service-provider configuration, schemas and resource types for a client to\
+ discover.", status: "automated", enforced: [{ repo: "hanzoai/iam", path: "internal/scim/scim.go", symbol: "\
+Route" }, { repo: "hanzoai/iam", path: "internal/scim/schemas.go", symbol: "ServiceProviderConfig" }],
+  verified: [{ method: "read", at: [{ repo: "hanzoai/iam", path: "internal/scim/scim.go", symbol: "R\
+oute" }, { repo: "hanzoai/iam", path: "internal/scim/schemas.go", symbol: "ServiceProviderConfig" }],
+  detail: "The user lifecycle routes are all present. The published capabilities declare bulk, sort \
+and etag as false, so a client is told what is missing rather than discovering it at runtime." }], maps: [
+  { clause: "soc2:CC6.2", strength: "full" }, { clause: "soc2:CC6.3", strength: "full" }, { clause: "\
+iso27001:A.5.16", strength: "full" }, { clause: "iso27001:A.5.18", strength: "full" }, { clause: "is\
+o27001:A.6.5", strength: "full" }, { clause: "nist80053:AC", strength: "full" }, { clause: "nist8005\
+3:PS", strength: "full" }] }, { id: "iam.scim.groups", category: "access", claim: "Group membership \
+arrives from a customer directory and drives role assignment.", mechanism: "None. There is no group \
+route, no handler, and no group resource type \u2014 the published resource-type set has exactly one memb\
+er.", status: "absent", note: "Absent, not stubbed. Role assignment cannot be driven from a customer\
+ directory today: users provision, group membership does not. A request for the group collection ans\
+wers a plain 404 rather than a protocol error document, because the published-resource path covers o\
+nly schema and resource-type lookups.", enforced: [{ repo: "hanzoai/iam", path: "internal/scim/schem\
+as.go", symbol: "resourceTypes" }], verified: [{ method: "read", at: [{ repo: "hanzoai/iam", path: "\
+internal/scim/schemas.go", symbol: "resourceTypes" }], detail: "The resource-type list has one membe\
+r, User. No group handler exists under any spelling." }], maps: [{ clause: "soc2:CC6.3", strength: "\
+partial" }, { clause: "iso27001:A.5.18", strength: "partial" }, { clause: "nist80053:AC", strength: "\
+partial" }] }, { id: "iam.passkey.signin", category: "access", claim: "A registered passkey can be u\
+sed to sign in.", mechanism: "None in the running build. Passkey credentials can be registered and m\
+anaged, and there is no assertion ceremony to challenge one \u2014 no begin-login route of any spelling e\
+xists.", status: "absent", note: "The capability flag returns false and the login descriptor is mask\
+ed, so no screen offers passkey sign-in. That is the only honest thing a login screen can do about a\
+ method the server cannot perform. Second factors that do work: an authenticator app, SMS and email,\
+ with recovery codes.", enforced: [{ repo: "hanzoai/iam", path: "pkg/schema/passkey.go", symbol: "Pa\
+sskeySignin" }, { repo: "hanzoai/iam", path: "internal/webauthn/webauthn.go", symbol: "Route" }, { repo: "\
+hanzoai/iam", path: "internal/oidc/frontdoor_passkey_test.go" }], verified: [{ method: "read", at: [
+  { repo: "hanzoai/iam", path: "pkg/schema/passkey.go", symbol: "PasskeySignin" }, { repo: "hanzoai/\
+iam", path: "internal/webauthn/webauthn.go", symbol: "Route" }, { repo: "hanzoai/iam", path: "intern\
+al/oidc/frontdoor_passkey_test.go" }], detail: "A test at internal/oidc/frontdoor_passkey_test.go as\
+serts this. A test names the four candidate ceremony paths and asserts all four answer 404. The cred\
+ential surface offers registration and management only." }], maps: [{ clause: "soc2:CC6.1", strength: "\
+partial" }, { clause: "iso27001:A.8.5", strength: "partial" }, { clause: "nist80053:IA", strength: "\
+partial" }] }, { id: "authz.path.grant", category: "access", claim: "A resource has a path, and a gr\
+ant covers a path and everything below it, so org-wide access, one workspace, and a narrowed agent c\
+redential all fall out of one check.", mechanism: "One authorization function tests the requested pa\
+th against the paths a caller holds, admitting a path and its descendants.", status: "partial", note: "\
+The containment model is real and it is one function. What it is built on is a byte-by-byte prefix c\
+omparison, which does not do what the model needs \u2014 that is recorded separately as authz.path.segmen\
+t, and it is why this is partial rather than automated.", enforced: [{ repo: "hanzoai/iam", path: "i\
+nternal/authz/authz.go", symbol: "pathAuthorized" }], verified: [{ method: "read", at: [{ repo: "han\
+zoai/iam", path: "internal/authz/authz.go", symbol: "pathAuthorized" }], detail: "One function answe\
+rs the containment question for every caller shape." }], maps: [{ clause: "soc2:CC6.1", strength: "p\
+artial" }, { clause: "soc2:CC6.3", strength: "partial" }, { clause: "iso27001:A.5.15", strength: "pa\
+rtial" }, { clause: "iso27001:A.5.18", strength: "partial" }, { clause: "iso27001:A.8.3", strength: "\
+partial" }, { clause: "nist80053:AC", strength: "partial" }] }, { id: "authz.path.segment", category: "\
+access", claim: "A grant on one path does not cover a longer path that merely starts with the same c\
+haracters, because the comparison advances a segment at a time.", mechanism: "None. The comparison i\
+s a byte prefix. The collisions someone already hit are handled by a separate exact-match table rath\
+er than by making the comparison segment-wise.", status: "absent", note: "Recorded absent because th\
+e mechanism named in the claim does not exist \u2014 not because path authorization is missing. The comme\
+nt above the function records hitting this exact hazard, where one action name is a character prefix\
+ of another, and working around it with an exact-match map. That workaround covers the collisions so\
+meone thought of; a segment walk would make the whole class impossible. A segment-wise implementatio\
+n exists elsewhere in the estate but is not on this path.", enforced: [{ repo: "hanzoai/iam", path: "\
 internal/authz/authz.go", symbol: "pathAuthorized" }], verified: [{ method: "read", at: [{ repo: "ha\
 nzoai/iam", path: "internal/authz/authz.go", symbol: "pathAuthorized" }], detail: "The function body\
  is a byte prefix test, and the comment above it documents the workaround." }], maps: [{ clause: "so\
 c2:CC6.1", strength: "partial" }, { clause: "soc2:CC6.3", strength: "partial" }, { clause: "iso27001\
 :A.5.15", strength: "partial" }, { clause: "iso27001:A.8.3", strength: "partial" }, { clause: "nist8\
-0053:AC", strength: "partial" }] }, { id: "edge.identity.headers", claim: "Headers naming an organiz\
-ation, a user, an email or a role are stripped at the edge before a handler reads one, and identity \
-is written back only from a verified token.", mechanism: "The request middleware deletes every autho\
-rity header and every sub-scope header by name, then re-mints them from validated claims. A second l\
-ayer deletes any header in two reserved families by prefix, so a new name cannot arrive unhandled.",
-  status: "automated", enforced: [{ repo: "hanzoai/cloud", path: "middleware_identity.go", symbol: "\
-authorityHeaders" }, { repo: "hanzoai/base", path: "tools/claims/claims.go", symbol: "StripIdentityH\
-eaders" }], verified: [{ method: "read", at: [{ repo: "hanzoai/cloud", path: "middleware_identity.go",
-  symbol: "authorityHeaders" }, { repo: "hanzoai/base", path: "tools/claims/claims.go", symbol: "Str\
-ipIdentityHeaders" }], detail: "The deletes run before anything reads a header, and the re-mint draw\
-s only from validated claims. The organization a caller asks to act in is honoured only where the si\
-gned membership already admits it; asking for one they are not in falls back to their own." }], maps: [
-  { clause: "soc2:CC6.1", strength: "full" }, { clause: "soc2:CC6.6", strength: "full" }, { clause: "\
-iso27001:A.8.3", strength: "full" }, { clause: "iso27001:A.8.20", strength: "full" }, { clause: "nis\
-t80053:AC", strength: "full" }, { clause: "nist80053:SC", strength: "full" }] }, { id: "base.tenant.\
-file", claim: "An organization's data is its own database file, so a query cannot reach across organ\
-izations \u2014 there is no second file open to reach into.", mechanism: "One function is the only w\
-ay a subsystem opens a per-organization database, and it builds the path from the organization slug.\
- A subsystem cannot name a file outside its tenant because it never builds the path itself.", status: "\
-automated", enforced: [{ repo: "hanzoai/cloud", path: "orgdb.go", symbol: "OpenOrgDB" }], verified: [
-  { method: "read", at: [{ repo: "hanzoai/cloud", path: "orgdb.go", symbol: "OpenOrgDB" }], detail: "\
-The path is composed from the organization slug and the subsystem name; every caller goes through th\
-e one opener." }], maps: [{ clause: "soc2:CC6.1", strength: "full" }, { clause: "soc2:C1.1", strength: "\
-full" }, { clause: "iso27001:A.8.3", strength: "full" }, { clause: "iso27001:A.8.12", strength: "ful\
-l" }, { clause: "nist80053:AC", strength: "full" }, { clause: "nist80053:SC", strength: "full" }] },
-  { id: "base.tenant.key", claim: "Each database is opened under a key derived for that organization\
- alone from one master, so a leaked key is worth one tenant instead of the estate.", mechanism: "A k\
-ey is derived from one master through a standard derivation function, bound to the namespace that ow\
-ns it. The derivation is a pure function of its inputs, so a file reopens after a restart with nothi\
-ng kept beside it, and a master of the wrong length is an error rather than a quiet fall back to no \
-key.", status: "partial", note: "Two different derivations answer to this claim and only one is per-\
-organization. The data plane derives per organization and per user, as the claim describes. The clou\
-d file layer derives per FILE, from a random file id \u2014 so two files of the SAME organization have un\
-related keys, and the key is not a function of the organization. Per-file derivation is not weaker a\
-gainst a stolen file, it is stronger; it just does not support a sentence that says the key belongs \
-to the organization.", enforced: [{ repo: "hanzoai/base", path: "plugins/org/org_db.go", symbol: "or\
-gDEK" }, { repo: "hanzoai/cloud", path: "cek/cek.go", symbol: "Derive" }], verified: [{ method: "rea\
-d", at: [{ repo: "hanzoai/base", path: "plugins/org/org_db.go", symbol: "orgDEK" }, { repo: "hanzoai\
-/cloud", path: "cek/cek.go", symbol: "Derive" }], detail: "Both derivations were read side by side. \
-They use the same primitive and bind different things into it." }], maps: [{ clause: "soc2:CC6.1", strength: "\
-partial" }, { clause: "soc2:C1.1", strength: "partial" }, { clause: "iso27001:A.8.24", strength: "pa\
-rtial" }, { clause: "iso27001:A.8.12", strength: "partial" }, { clause: "nist80053:SC", strength: "p\
-artial" }] }, { id: "audit.request", claim: "One row records who acted, from where, the method and p\
-ath, the action, the status the server returned, and the time.", mechanism: "Request middleware writ\
-es one record per request from the validated principal and the response, into a table with a monoton\
-ic sequence. Credential-shaped path segments and the user agent are scrubbed before the row is writt\
-en.", status: "automated", enforced: [{ repo: "hanzoai/cloud", path: "audit_middleware.go", symbol: "\
-Audit" }, { repo: "hanzoai/cloud", path: "audit/store.go", symbol: "Append" }, { repo: "hanzoai/clou\
-d", path: "audit/record.go" }], verified: [{ method: "read", at: [{ repo: "hanzoai/cloud", path: "au\
-dit_middleware.go", symbol: "Audit" }, { repo: "hanzoai/cloud", path: "audit/store.go", symbol: "App\
-end" }, { repo: "hanzoai/cloud", path: "audit/record.go" }], detail: "There are TWO trails and they \
-are not the same shape. This one is per request. The identity service keeps a second record type car\
-rying organization, user, address, method, request path, action, payload, response and status \u2014 but \
-it is written for accountable actions rather than for every request, and its address field is delibe\
-rately left empty because behind the ingress the peer address is the ingress pod, which identifies n\
-othing while still being personal data." }], maps: [{ clause: "soc2:CC7.2", strength: "full" }, { clause: "\
-soc2:CC4.1", strength: "full" }, { clause: "iso27001:A.8.15", strength: "full" }, { clause: "iso2700\
-1:A.8.16", strength: "full" }, { clause: "nist80053:AU", strength: "full" }] }, { id: "audit.redacti\
-on", claim: "What the trail records is scrubbed of secrets before it is written.", mechanism: "Paylo\
-ads emitted with a record are walked recursively against a denylist and matching values are replaced\
- with a marker. The request path is scrubbed of credential-shaped segments and the user agent is scr\
-ubbed, before the row is written.", status: "partial", note: "A Hanzo page describes this as the req\
-uest body recorded with passwords masked. No request body is captured anywhere on this path: the mid\
-dleware builds a row from method, path, status and principal only, and the identity service's two wr\
-iters set the payload field explicitly. Redaction is real; the body capture it is described as prote\
-cting does not happen. Nothing is leaking \u2014 the sentence is wrong, and that is the defect this entry\
- records.", enforced: [{ repo: "hanzoai/cloud", path: "audit/redact.go", symbol: "Redact" }, { repo: "\
-hanzoai/cloud", path: "audit_middleware.go", symbol: "scrubPath" }], verified: [{ method: "read", at: [
-  { repo: "hanzoai/cloud", path: "audit/redact.go", symbol: "Redact" }, { repo: "hanzoai/cloud", path: "\
-audit_middleware.go", symbol: "scrubPath" }], detail: "The denylist covers password, secret, token, \
-client secret and private key among others, and the walk is recursive. The middleware never reads a \
-request body, so there is no captured body to mask." }], maps: [{ clause: "soc2:CC6.1", strength: "p\
-artial" }, { clause: "iso27001:A.8.11", strength: "partial" }, { clause: "iso27001:A.8.12", strength: "\
-partial" }, { clause: "nist80053:AU", strength: "partial" }, { clause: "nist80053:SC", strength: "pa\
-rtial" }] }, { id: "audit.reserved", claim: "Rows recording the platform's accountable actions are r\
-eserved: the API refuses to create, correct or delete one, so evidence cannot be forged with an inve\
-nted grant or quietly trimmed of a real one.", mechanism: "One predicate names the reserved actions,\
- and the audit surface calls it on every write verb \u2014 on create, on delete, and on update twice, for\
- the stored row's action and for the incoming one, so a row cannot be forged by relabelling one you \
-own.", status: "automated", enforced: [{ repo: "hanzoai/iam", path: "pkg/schema/audit_log.go", symbol: "\
-PlatformWritten" }, { repo: "hanzoai/iam", path: "internal/auditlogs/auditlogs.go", symbol: "refuseP\
-latformAction" }, { repo: "hanzoai/cloud", path: "apps/admin/audit/audit.go", symbol: "Route" }, { repo: "\
-hanzoai/iam", path: "internal/auditlogs/reserved_test.go" }], verified: [{ method: "read", at: [{ repo: "\
-hanzoai/iam", path: "pkg/schema/audit_log.go", symbol: "PlatformWritten" }, { repo: "hanzoai/iam", path: "\
+0053:AC", strength: "partial" }] }, { id: "edge.identity.headers", category: "network", claim: "Head\
+ers naming an organization, a user, an email or a role are stripped at the edge before a handler rea\
+ds one, and identity is written back only from a verified token.", mechanism: "The request middlewar\
+e deletes every authority header and every sub-scope header by name, then re-mints them from validat\
+ed claims. A second layer deletes any header in two reserved families by prefix, so a new name canno\
+t arrive unhandled.", status: "automated", enforced: [{ repo: "hanzoai/cloud", path: "middleware_ide\
+ntity.go", symbol: "authorityHeaders" }, { repo: "hanzoai/base", path: "tools/claims/claims.go", symbol: "\
+StripIdentityHeaders" }], verified: [{ method: "read", at: [{ repo: "hanzoai/cloud", path: "middlewa\
+re_identity.go", symbol: "authorityHeaders" }, { repo: "hanzoai/base", path: "tools/claims/claims.go",
+  symbol: "StripIdentityHeaders" }], detail: "The deletes run before anything reads a header, and th\
+e re-mint draws only from validated claims. The organization a caller asks to act in is honoured onl\
+y where the signed membership already admits it; asking for one they are not in falls back to their \
+own." }], maps: [{ clause: "soc2:CC6.1", strength: "full" }, { clause: "soc2:CC6.6", strength: "full" },
+  { clause: "iso27001:A.8.3", strength: "full" }, { clause: "iso27001:A.8.20", strength: "full" }, {
+  clause: "nist80053:AC", strength: "full" }, { clause: "nist80053:SC", strength: "full" }] }, { id: "\
+base.tenant.file", category: "data", claim: "An organization's data is its own database file, so a q\
+uery cannot reach across organizations \u2014 there is no second file open to reach into.", mechanism: "\
+One function is the only way a subsystem opens a per-organization database, and it builds the path f\
+rom the organization slug. A subsystem cannot name a file outside its tenant because it never builds\
+ the path itself.", status: "automated", enforced: [{ repo: "hanzoai/cloud", path: "orgdb.go", symbol: "\
+OpenOrgDB" }], verified: [{ method: "read", at: [{ repo: "hanzoai/cloud", path: "orgdb.go", symbol: "\
+OpenOrgDB" }], detail: "The path is composed from the organization slug and the subsystem name; ever\
+y caller goes through the one opener." }], maps: [{ clause: "soc2:CC6.1", strength: "full" }, { clause: "\
+soc2:C1.1", strength: "full" }, { clause: "iso27001:A.8.3", strength: "full" }, { clause: "iso27001:\
+A.8.12", strength: "full" }, { clause: "nist80053:AC", strength: "full" }, { clause: "nist80053:SC",
+  strength: "full" }] }, { id: "base.tenant.key", category: "data", claim: "Each database is opened \
+under a key derived for that organization alone from one master, so a leaked key is worth one tenant\
+ instead of the estate.", mechanism: "A key is derived from one master through a standard derivation\
+ function, bound to the namespace that owns it. The derivation is a pure function of its inputs, so \
+a file reopens after a restart with nothing kept beside it, and a master of the wrong length is an e\
+rror rather than a quiet fall back to no key.", status: "partial", note: "Two different derivations \
+answer to this claim and only one is per-organization. The data plane derives per organization and p\
+er user, as the claim describes. The cloud file layer derives per FILE, from a random file id \u2014 so t\
+wo files of the SAME organization have unrelated keys, and the key is not a function of the organiza\
+tion. Per-file derivation is not weaker against a stolen file, it is stronger; it just does not supp\
+ort a sentence that says the key belongs to the organization.", enforced: [{ repo: "hanzoai/base", path: "\
+plugins/org/org_db.go", symbol: "orgDEK" }, { repo: "hanzoai/cloud", path: "cek/cek.go", symbol: "De\
+rive" }], verified: [{ method: "read", at: [{ repo: "hanzoai/base", path: "plugins/org/org_db.go", symbol: "\
+orgDEK" }, { repo: "hanzoai/cloud", path: "cek/cek.go", symbol: "Derive" }], detail: "Both derivatio\
+ns were read side by side. They use the same primitive and bind different things into it." }], maps: [
+  { clause: "soc2:CC6.1", strength: "partial" }, { clause: "soc2:C1.1", strength: "partial" }, { clause: "\
+iso27001:A.8.24", strength: "partial" }, { clause: "iso27001:A.8.12", strength: "partial" }, { clause: "\
+nist80053:SC", strength: "partial" }] }, { id: "audit.request", category: "infrastructure", claim: "\
+One row records who acted, from where, the method and path, the action, the status the server return\
+ed, and the time.", mechanism: "Request middleware writes one record per request from the validated \
+principal and the response, into a table with a monotonic sequence. Credential-shaped path segments \
+and the user agent are scrubbed before the row is written.", status: "automated", enforced: [{ repo: "\
+hanzoai/cloud", path: "audit_middleware.go", symbol: "Audit" }, { repo: "hanzoai/cloud", path: "audi\
+t/store.go", symbol: "Append" }, { repo: "hanzoai/cloud", path: "audit/record.go" }], verified: [{ method: "\
+read", at: [{ repo: "hanzoai/cloud", path: "audit_middleware.go", symbol: "Audit" }, { repo: "hanzoa\
+i/cloud", path: "audit/store.go", symbol: "Append" }, { repo: "hanzoai/cloud", path: "audit/record.g\
+o" }], detail: "There are TWO trails and they are not the same shape. This one is per request. The i\
+dentity service keeps a second record type carrying organization, user, address, method, request pat\
+h, action, payload, response and status \u2014 but it is written for accountable actions rather than for \
+every request, and its address field is deliberately left empty because behind the ingress the peer \
+address is the ingress pod, which identifies nothing while still being personal data." }], maps: [{ clause: "\
+soc2:CC7.2", strength: "full" }, { clause: "soc2:CC4.1", strength: "full" }, { clause: "iso27001:A.8\
+.15", strength: "full" }, { clause: "iso27001:A.8.16", strength: "full" }, { clause: "nist80053:AU",
+  strength: "full" }] }, { id: "audit.redaction", category: "data", claim: "What the trail records i\
+s scrubbed of secrets before it is written.", mechanism: "Payloads emitted with a record are walked \
+recursively against a denylist and matching values are replaced with a marker. The request path is s\
+crubbed of credential-shaped segments and the user agent is scrubbed, before the row is written.", status: "\
+partial", note: "A Hanzo page describes this as the request body recorded with passwords masked. No \
+request body is captured anywhere on this path: the middleware builds a row from method, path, statu\
+s and principal only, and the identity service's two writers set the payload field explicitly. Redac\
+tion is real; the body capture it is described as protecting does not happen. Nothing is leaking \u2014 t\
+he sentence is wrong, and that is the defect this entry records.", enforced: [{ repo: "hanzoai/cloud",
+  path: "audit/redact.go", symbol: "Redact" }, { repo: "hanzoai/cloud", path: "audit_middleware.go",
+  symbol: "scrubPath" }], verified: [{ method: "read", at: [{ repo: "hanzoai/cloud", path: "audit/re\
+dact.go", symbol: "Redact" }, { repo: "hanzoai/cloud", path: "audit_middleware.go", symbol: "scrubPa\
+th" }], detail: "The denylist covers password, secret, token, client secret and private key among ot\
+hers, and the walk is recursive. The middleware never reads a request body, so there is no captured \
+body to mask." }], maps: [{ clause: "soc2:CC6.1", strength: "partial" }, { clause: "iso27001:A.8.11",
+  strength: "partial" }, { clause: "iso27001:A.8.12", strength: "partial" }, { clause: "nist80053:AU",
+  strength: "partial" }, { clause: "nist80053:SC", strength: "partial" }] }, { id: "audit.reserved",
+  category: "corporate", claim: "Rows recording the platform's accountable actions are reserved: the\
+ API refuses to create, correct or delete one, so evidence cannot be forged with an invented grant o\
+r quietly trimmed of a real one.", mechanism: "One predicate names the reserved actions, and the aud\
+it surface calls it on every write verb \u2014 on create, on delete, and on update twice, for the stored \
+row's action and for the incoming one, so a row cannot be forged by relabelling one you own.", status: "\
+automated", enforced: [{ repo: "hanzoai/iam", path: "pkg/schema/audit_log.go", symbol: "PlatformWrit\
+ten" }, { repo: "hanzoai/iam", path: "internal/auditlogs/auditlogs.go", symbol: "refusePlatformActio\
+n" }, { repo: "hanzoai/cloud", path: "apps/admin/audit/audit.go", symbol: "Route" }, { repo: "hanzoa\
+i/iam", path: "internal/auditlogs/reserved_test.go" }], verified: [{ method: "read", at: [{ repo: "h\
+anzoai/iam", path: "pkg/schema/audit_log.go", symbol: "PlatformWritten" }, { repo: "hanzoai/iam", path: "\
 internal/auditlogs/auditlogs.go", symbol: "refusePlatformAction" }, { repo: "hanzoai/cloud", path: "\
 apps/admin/audit/audit.go", symbol: "Route" }, { repo: "hanzoai/iam", path: "internal/auditlogs/rese\
 rved_test.go" }], detail: "A test at internal/auditlogs/reserved_test.go asserts this. The test seed\
@@ -280,82 +283,83 @@ ject of the evidence cannot write it." }, { method: "audit", actions: ["consent-
 er-token", "mint-user-keys", "revoke-user-keys", "token-exchange"] }], maps: [{ clause: "soc2:CC7.2",
   strength: "full" }, { clause: "soc2:CC4.1", strength: "full" }, { clause: "iso27001:A.5.28", strength: "\
 full" }, { clause: "iso27001:A.8.15", strength: "full" }, { clause: "nist80053:AU", strength: "full" }] },
-  { id: "audit.index", claim: "Organization, user, action and time each carry an index, so a reviewe\
-r's question is a lookup rather than a walk through the whole trail.", mechanism: "The cloud audit t\
-able declares real indexes on organization with sequence, action with sequence, result with sequence\
-, and timestamp.", status: "partial", note: "Partial on two counts, both measured rather than reason\
-ed. First, the cloud trail indexes organization, action and time but NOT user \u2014 so of the four quest\
-ions named, 'everything one person did' is the one that still walks the table. Second, the identity \
-service's record declares index tags on organization, user, action and time and they are INERT: the \
-tag parser reads only two directives and index is not one of them, and that backend stores every ent\
-ity as a JSON payload in a single shared table with indexes on kind, parent and deleted alone. The d\
-eclaration exists; on this backend it materializes nothing.", enforced: [{ repo: "hanzoai/cloud", path: "\
-audit/store.go", symbol: "schema" }, { repo: "hanzoai/orm", path: "model.go", symbol: "parseStructTa\
-gs" }], verified: [{ method: "read", at: [{ repo: "hanzoai/cloud", path: "audit/store.go", symbol: "\
-schema" }, { repo: "hanzoai/orm", path: "model.go", symbol: "parseStructTags" }], detail: "The index\
- statements in the cloud store were read directly. The inert-tag finding was measured, not inferred:\
- an entity was written through the record layer to a real database file and the resulting schema rea\
-d back, which showed one shared table with a JSON payload column and three indexes, none of them on \
-the declared fields." }], maps: [{ clause: "soc2:CC7.2", strength: "partial" }, { clause: "iso27001:\
-A.8.15", strength: "partial" }, { clause: "iso27001:A.8.16", strength: "partial" }, { clause: "nist8\
-0053:AU", strength: "partial" }] }, { id: "audit.chain", claim: "Each record carries the previous re\
-cord's hash and its own, so a row removed or altered after the fact is detectable rather than silent\
-.", mechanism: "Records are appended over a monotonic sequence, each carrying the prior hash, and an\
- endpoint walks the chain and reports where it breaks. The store issues no update and no delete.", status: "\
-automated", enforced: [{ repo: "hanzoai/cloud", path: "audit/record.go", symbol: "Hash" }, { repo: "\
-hanzoai/cloud", path: "apps/admin/audit/audit.go", symbol: "Verify" }, { repo: "hanzoai/cloud", path: "\
-audit/store.go" }], verified: [{ method: "read", at: [{ repo: "hanzoai/cloud", path: "audit/record.g\
-o", symbol: "Hash" }, { repo: "hanzoai/cloud", path: "apps/admin/audit/audit.go", symbol: "Verify" },
-  { repo: "hanzoai/cloud", path: "audit/store.go" }], detail: "Every record carries a previous hash \
-and its own, the sequence is the primary key, and the store package issues no update and no delete s\
-tatement anywhere." }], maps: [{ clause: "soc2:CC7.2", strength: "full" }, { clause: "soc2:PI1.5", strength: "\
-full" }, { clause: "iso27001:A.5.28", strength: "full" }, { clause: "iso27001:A.8.15", strength: "fu\
-ll" }, { clause: "nist80053:AU", strength: "full" }, { clause: "nist80053:SI", strength: "full" }] },
-  { id: "privacy.consent", claim: "A member's training-consent answer is recorded in the trail as a \
-row the organization cannot author, alter or remove.", mechanism: "The consent endpoint writes a row\
- carrying the before and after state under a reserved action, inside the same transaction as the cha\
-nge itself, so the record and the change land together or not at all.", status: "automated", enforced: [
-  { repo: "hanzoai/iam", path: "internal/oidc/consent.go", symbol: "auditConsent" }, { repo: "hanzoa\
-i/iam", path: "pkg/schema/audit_log.go", symbol: "ActionConsentTraining" }], verified: [{ method: "r\
-ead", at: [{ repo: "hanzoai/iam", path: "internal/oidc/consent.go", symbol: "auditConsent" }, { repo: "\
-hanzoai/iam", path: "pkg/schema/audit_log.go", symbol: "ActionConsentTraining" }], detail: "Rows und\
-er consent-training evidence this. One row per transition, carrying the from and to state. The actio\
-n is reserved, which is what makes the row evidence rather than an assertion." }, { method: "audit",
-  actions: ["consent-training"] }], maps: [{ clause: "soc2:P2.1", strength: "full" }, { clause: "soc\
-2:P6.2", strength: "full" }, { clause: "iso27001:A.5.34", strength: "full" }, { clause: "nist80053:P\
-T", strength: "full" }, { clause: "nist80053:AU", strength: "full" }] }, { id: "kms.signing.handle",
-  claim: "The signing interface takes a key id and some bytes and returns a signature. The private k\
-ey is made inside an external module and stays there, so there is no moment when it exists in our pr\
-ocess to be logged, leaked or written into a crash dump.", mechanism: "None found. Signing keys are \
-held as strings on the identity service's own records and parsed in the running binary to build a si\
-gner. The cloud key service is embedded in the binary, with a master key read from the environment.",
-  status: "absent", note: "Recorded absent after searching the four repositories that serve this pla\
-tform for any external key-service client. There is none, and the key service exposes no signing fun\
-ction at all. Private keys are held and used in-process today. Threshold signing is wired but fails \
-closed unless a backend is configured, so it is not a path in service. A Hanzo page states this cont\
-rol in the present tense and names four external modules; on the evidence available it is a roadmap \
-item. This is the most consequential gap in this inventory.", enforced: [{ repo: "hanzoai/iam", path: "\
-pkg/schema/cert.go", symbol: "PrivateKey" }, { repo: "hanzoai/cloud", path: "clients/kms/kms.go", symbol: "\
-New" }, { repo: "hanzoai/iam", path: "internal/oidc/jwt.go" }], verified: [{ method: "read", at: [{ repo: "\
-hanzoai/iam", path: "pkg/schema/cert.go", symbol: "PrivateKey" }, { repo: "hanzoai/cloud", path: "cl\
-ients/kms/kms.go", symbol: "New" }, { repo: "hanzoai/iam", path: "internal/oidc/jwt.go" }], detail: "\
-The private key is a string field on a record, and the signer is built by parsing it in the running \
-binary. The one hardware-module mention in the tree is a note explaining why a dependency was NOT ta\
-ken." }], maps: [{ clause: "soc2:CC6.1", strength: "partial" }, { clause: "soc2:CC6.7", strength: "p\
-artial" }, { clause: "iso27001:A.8.24", strength: "partial" }, { clause: "nist80053:SC", strength: "\
-partial" }] }, { id: "crypto.validation", claim: "The cryptographic modules this platform runs hold \
-an independent validation.", mechanism: "None. The code implements published standards, the lattice-\
-based key-encapsulation and signature schemes among them. Implementing a standard is not the same as\
- holding a validation, and a validation belongs to the vendor of a module rather than to the softwar\
-e that calls it.", status: "absent", note: "Carried so the gap is counted rather than omitted. There\
- is nothing to read here \u2014 no certificate exists to point at \u2014 so this entry rests on a reading of w\
-hat is absent rather than on anything that could fail. Where a deployment needs validated modules, t\
-hat is a question about which module signs, and it is answered by kms.signing.handle, which is itsel\
-f absent.", enforced: [{ repo: "hanzoai/iam", path: "internal/oidc/mldsa.go", symbol: "init" }], verified: [
-  { method: "read", at: [{ repo: "hanzoai/iam", path: "internal/oidc/mldsa.go", symbol: "init" }], detail: "\
-The signature scheme is implemented in software inside our own binary. No external validated module \
-is reached." }], maps: [{ clause: "iso27001:A.8.24", strength: "partial" }, { clause: "nist80053:SC",
-  strength: "partial" }] }];
+  { id: "audit.index", category: "infrastructure", claim: "Organization, user, action and time each \
+carry an index, so a reviewer's question is a lookup rather than a walk through the whole trail.", mechanism: "\
+The cloud audit table declares real indexes on organization with sequence, action with sequence, res\
+ult with sequence, and timestamp.", status: "partial", note: "Partial on two counts, both measured r\
+ather than reasoned. First, the cloud trail indexes organization, action and time but NOT user \u2014 so \
+of the four questions named, 'everything one person did' is the one that still walks the table. Seco\
+nd, the identity service's record declares index tags on organization, user, action and time and the\
+y are INERT: the tag parser reads only two directives and index is not one of them, and that backend\
+ stores every entity as a JSON payload in a single shared table with indexes on kind, parent and del\
+eted alone. The declaration exists; on this backend it materializes nothing.", enforced: [{ repo: "h\
+anzoai/cloud", path: "audit/store.go", symbol: "schema" }, { repo: "hanzoai/orm", path: "model.go", symbol: "\
+parseStructTags" }], verified: [{ method: "read", at: [{ repo: "hanzoai/cloud", path: "audit/store.g\
+o", symbol: "schema" }, { repo: "hanzoai/orm", path: "model.go", symbol: "parseStructTags" }], detail: "\
+The index statements in the cloud store were read directly. The inert-tag finding was measured, not \
+inferred: an entity was written through the record layer to a real database file and the resulting s\
+chema read back, which showed one shared table with a JSON payload column and three indexes, none of\
+ them on the declared fields." }], maps: [{ clause: "soc2:CC7.2", strength: "partial" }, { clause: "\
+iso27001:A.8.15", strength: "partial" }, { clause: "iso27001:A.8.16", strength: "partial" }, { clause: "\
+nist80053:AU", strength: "partial" }] }, { id: "audit.chain", category: "infrastructure", claim: "Ea\
+ch record carries the previous record's hash and its own, so a row removed or altered after the fact\
+ is detectable rather than silent.", mechanism: "Records are appended over a monotonic sequence, eac\
+h carrying the prior hash, and an endpoint walks the chain and reports where it breaks. The store is\
+sues no update and no delete.", status: "automated", enforced: [{ repo: "hanzoai/cloud", path: "audi\
+t/record.go", symbol: "Hash" }, { repo: "hanzoai/cloud", path: "apps/admin/audit/audit.go", symbol: "\
+Verify" }, { repo: "hanzoai/cloud", path: "audit/store.go" }], verified: [{ method: "read", at: [{ repo: "\
+hanzoai/cloud", path: "audit/record.go", symbol: "Hash" }, { repo: "hanzoai/cloud", path: "apps/admi\
+n/audit/audit.go", symbol: "Verify" }, { repo: "hanzoai/cloud", path: "audit/store.go" }], detail: "\
+Every record carries a previous hash and its own, the sequence is the primary key, and the store pac\
+kage issues no update and no delete statement anywhere." }], maps: [{ clause: "soc2:CC7.2", strength: "\
+full" }, { clause: "soc2:PI1.5", strength: "full" }, { clause: "iso27001:A.5.28", strength: "full" },
+  { clause: "iso27001:A.8.15", strength: "full" }, { clause: "nist80053:AU", strength: "full" }, { clause: "\
+nist80053:SI", strength: "full" }] }, { id: "privacy.consent", category: "data", claim: "A member's \
+training-consent answer is recorded in the trail as a row the organization cannot author, alter or r\
+emove.", mechanism: "The consent endpoint writes a row carrying the before and after state under a r\
+eserved action, inside the same transaction as the change itself, so the record and the change land \
+together or not at all.", status: "automated", enforced: [{ repo: "hanzoai/iam", path: "internal/oid\
+c/consent.go", symbol: "auditConsent" }, { repo: "hanzoai/iam", path: "pkg/schema/audit_log.go", symbol: "\
+ActionConsentTraining" }], verified: [{ method: "read", at: [{ repo: "hanzoai/iam", path: "internal/\
+oidc/consent.go", symbol: "auditConsent" }, { repo: "hanzoai/iam", path: "pkg/schema/audit_log.go", symbol: "\
+ActionConsentTraining" }], detail: "Rows under consent-training evidence this. One row per transitio\
+n, carrying the from and to state. The action is reserved, which is what makes the row evidence rath\
+er than an assertion." }, { method: "audit", actions: ["consent-training"] }], maps: [{ clause: "soc\
+2:P2.1", strength: "full" }, { clause: "soc2:P6.2", strength: "full" }, { clause: "iso27001:A.5.34",
+  strength: "full" }, { clause: "nist80053:PT", strength: "full" }, { clause: "nist80053:AU", strength: "\
+full" }] }, { id: "kms.signing.handle", category: "data", claim: "The signing interface takes a key \
+id and some bytes and returns a signature. The private key is made inside an external module and sta\
+ys there, so there is no moment when it exists in our process to be logged, leaked or written into a\
+ crash dump.", mechanism: "None found. Signing keys are held as strings on the identity service's ow\
+n records and parsed in the running binary to build a signer. The cloud key service is embedded in t\
+he binary, with a master key read from the environment.", status: "absent", note: "Recorded absent a\
+fter searching the four repositories that serve this platform for any external key-service client. T\
+here is none, and the key service exposes no signing function at all. Private keys are held and used\
+ in-process today. Threshold signing is wired but fails closed unless a backend is configured, so it\
+ is not a path in service. A Hanzo page states this control in the present tense and names four exte\
+rnal modules; on the evidence available it is a roadmap item. This is the most consequential gap in \
+this inventory.", enforced: [{ repo: "hanzoai/iam", path: "pkg/schema/cert.go", symbol: "PrivateKey" },
+  { repo: "hanzoai/cloud", path: "clients/kms/kms.go", symbol: "New" }, { repo: "hanzoai/iam", path: "\
+internal/oidc/jwt.go" }], verified: [{ method: "read", at: [{ repo: "hanzoai/iam", path: "pkg/schema\
+/cert.go", symbol: "PrivateKey" }, { repo: "hanzoai/cloud", path: "clients/kms/kms.go", symbol: "New" },
+  { repo: "hanzoai/iam", path: "internal/oidc/jwt.go" }], detail: "The private key is a string field\
+ on a record, and the signer is built by parsing it in the running binary. The one hardware-module m\
+ention in the tree is a note explaining why a dependency was NOT taken." }], maps: [{ clause: "soc2:\
+CC6.1", strength: "partial" }, { clause: "soc2:CC6.7", strength: "partial" }, { clause: "iso27001:A.\
+8.24", strength: "partial" }, { clause: "nist80053:SC", strength: "partial" }] }, { id: "crypto.vali\
+dation", category: "data", claim: "The cryptographic modules this platform runs hold an independent \
+validation.", mechanism: "None. The code implements published standards, the lattice-based key-encap\
+sulation and signature schemes among them. Implementing a standard is not the same as holding a vali\
+dation, and a validation belongs to the vendor of a module rather than to the software that calls it\
+.", status: "absent", note: "Carried so the gap is counted rather than omitted. There is nothing to \
+read here \u2014 no certificate exists to point at \u2014 so this entry rests on a reading of what is absent r\
+ather than on anything that could fail. Where a deployment needs validated modules, that is a questi\
+on about which module signs, and it is answered by kms.signing.handle, which is itself absent.", enforced: [
+  { repo: "hanzoai/iam", path: "internal/oidc/mldsa.go", symbol: "init" }], verified: [{ method: "re\
+ad", at: [{ repo: "hanzoai/iam", path: "internal/oidc/mldsa.go", symbol: "init" }], detail: "The sig\
+nature scheme is implemented in software inside our own binary. No external validated module is reac\
+hed." }], maps: [{ clause: "iso27001:A.8.24", strength: "partial" }, { clause: "nist80053:SC", strength: "\
+partial" }] }];
 
   // <define:__FRAMEWORKS__>
   var define_FRAMEWORKS_default = { $comment: "Framework clause catalogs. Reference data: the publis\
@@ -738,7 +742,7 @@ t`);
   // src/inventory.ts
   var CONTROLS = define_CONTROLS_default;
   var FRAMEWORKS = define_FRAMEWORKS_default;
-  var VERSION = "0.2.2";
+  var VERSION = "0.2.3";
   function ids() {
     const out = [];
     for (const k in FRAMEWORKS) {

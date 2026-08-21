@@ -47,6 +47,10 @@ export interface Mapping {
 
 export interface Control {
   id: string;
+  // Which of the eight groups this control belongs to (center.CATEGORIES). A
+  // closed vocabulary, and optional here because the field arrived after the
+  // first inventory did; center.category answers for one that has none.
+  category?: string;
   title?: string;
   claim: string;
   mechanism: string;

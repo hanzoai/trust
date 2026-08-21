@@ -57,7 +57,7 @@ import _ "embed"
 // became a product: per-tenant storage, the authoring surface, and the public
 // door. The host contract gained three required globals there, which is why it
 // was a minor and not a patch — an older host cannot run this bundle.
-const Version = "0.2.2"
+const Version = "0.2.3"
 
 //go:embed goja/bundle.js
 var bundle []byte

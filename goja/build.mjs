@@ -62,6 +62,10 @@ export function normalize(input) {
       maps = flat;
     }
     const out = { id: c.id };
+    // normalize builds the control field by field rather than spreading, so a
+    // field it does not name is DROPPED — silently, and only visible on the
+    // page, where the group a control belongs to had simply gone missing.
+    if (c.category) out.category = c.category;
     if (c.title) out.title = c.title;
     out.claim = c.claim;
     out.mechanism = c.mechanism;

@@ -283,3 +283,27 @@ it("a section nobody has heard of is not found, rather than created", () => {
   assert.equal(res.status, 404);
   assert.match(res.body.message, /no trust section/);
 });
+
+// normalize() in build.mjs rebuilds a control field by field, so a field it does
+// not name is dropped between controls.json and the bundle — silently, and
+// visible only on a page where the grouping had gone missing. This is the gate
+// for that whole class: every control the real inventory ships reaches the
+// artifact carrying a group from the closed set.
+it("every control reaches the bundle carrying its category", () => {
+  const { handle } = load({ own: true });
+  const groups = [
+    "infrastructure", "data", "access", "network",
+    "endpoint", "corporate", "product", "incident",
+  ];
+  const controls = call(handle, "controls.list").body.controls;
+  assert.ok(controls.length > 0);
+  // Compared by LENGTH, not deepEqual: the value crosses a vm realm boundary, so
+  // its Array is not this realm's and a strict deepEqual fails on the prototype
+  // even when the contents match.
+  const missing = [...controls].filter((c) => !groups.includes(c.category)).map((c) => c.id);
+  assert.equal(
+    missing.length,
+    0,
+    "reached the artifact with no group, or one outside the eight: " + missing.join(", "),
+  );
+});

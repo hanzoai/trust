@@ -53,10 +53,10 @@ import _ "embed"
 // this const and inlines it, so the Go const and the served payload cannot
 // disagree about which inventory is running.
 //
-// 0.2.0 is where the plugin stopped being one organization's page and became a
-// product: per-tenant storage, the authoring surface, and the public door. The
-// host contract gained three required globals in that change, which is why it is
-// a minor and not a patch — an older host cannot run this bundle.
+// The 0.2 line is where the plugin stopped being one organization's page and
+// became a product: per-tenant storage, the authoring surface, and the public
+// door. The host contract gained three required globals there, which is why it
+// was a minor and not a patch — an older host cannot run this bundle.
 const Version = "0.2.2"
 
 //go:embed goja/bundle.js

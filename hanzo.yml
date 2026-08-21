@@ -27,20 +27,27 @@ test:
   - name: embed
     run: go build ./... && go vet ./...
 
-  # The copy gate. This repo names three frameworks on nearly every page it
-  # serves, so it is the one most able to claim something we do not hold — and
-  # the bundle is a tracked .js the gate reads, inventory prose included.
-  - name: claims
-    run: |
-      git clone --depth 1 https://git.hanzo.ai/hanzoai/ci /tmp/ci
-      /tmp/ci/bin/certclaims .
+  # NO copy gate here. certclaims matters more to this repo than to any other —
+  # it names three frameworks on nearly every page it serves, and the bundle is
+  # a tracked .js the gate reads, inventory prose included — but the shared
+  # pipeline ALREADY runs it against every caller, in `Structural invariants`,
+  # before anything is built. Declaring it again was one fact in two homes, and
+  # the second copy cloned hanzoai/ci to /tmp/ci, which is where the pipeline
+  # had already put it. The tools are on $CI_HOME/bin if a step ever needs one.
 
   # The page's own types. The build below is the rest of its gate.
+  #
+  # From INSIDE site/, not `pnpm --dir site` from the root. corepack picks a pnpm
+  # by reading `packageManager` out of the package.json in the CURRENT directory,
+  # and this repo has none at its root — so from there corepack provisions its
+  # own default, pnpm then reads site/package.json, finds a different version
+  # pinned, and refuses rather than switching under corepack.
   - name: site
     run: |
       corepack enable
-      pnpm --dir site install --frozen-lockfile
-      pnpm --dir site typecheck
+      cd site
+      pnpm install --frozen-lockfile
+      pnpm typecheck
 
 # trust.hanzo.ai. The page reads /v1/trust at RUNTIME, so the export is a shell
 # and the numbers are never baked into it — a trust page compiled from a
@@ -49,7 +56,11 @@ test:
 site:
   slug: trust
   dir: site/out
-  build: corepack enable && pnpm --dir site install --frozen-lockfile && pnpm --dir site build
+  # `cd site` first, for the same reason the gate above does: corepack reads
+  # `packageManager` from the CURRENT directory, and the root carries no
+  # package.json. `dir` stays repo-relative — it is read by the publisher, not
+  # by this shell.
+  build: corepack enable && cd site && pnpm install --frozen-lockfile && pnpm build
   on: [main]
 
 kms:

@@ -8,7 +8,8 @@
   var __getOwnPropSymbols = Object.getOwnPropertySymbols;
   var __hasOwnProp = Object.prototype.hasOwnProperty;
   var __propIsEnum = Object.prototype.propertyIsEnumerable;
-  var __defNormalProp = (obj, key, value) => key in obj ? __defProp(obj, key, { enumerable: true, configurable: true, writable: true, value }) : obj[key] = value;
+  var __defNormalProp = (obj, key, value) => key in obj ? __defProp(obj, key, { enumerable: true, configurable: true,
+  writable: true, value }) : obj[key] = value;
   var __spreadValues = (a, b) => {
     for (var prop in b || (b = {}))
       if (__hasOwnProp.call(b, prop))
@@ -23,15 +24,721 @@
   var __spreadProps = (a, b) => __defProps(a, __getOwnPropDescs(b));
 
   // <define:__CONTROLS__>
-  var define_CONTROLS_default = [{ id: "iam.issuer", claim: "Hanzo IAM issues every credential, and signing in is an OIDC redirect rather than a form any application holds.", mechanism: "The authorization endpoint validates the request and returns a code; a single mint path turns that code into tokens. Everything else in the estate consumes tokens rather than issuing them.", status: "partial", note: "Partial for scope, not for quality. The redirect flow and the single mint path are both there to read. Establishing that NOTHING else in the estate issues a credential means auditing every service for a second path, and that sweep has not been done \u2014 so the narrower word is the honest one.", enforced: [{ repo: "hanzoai/iam", path: "internal/oidc/authorize.go", symbol: "Authorize" }, { repo: "hanzoai/iam", path: "internal/oidc/mint.go", symbol: "mint" }], verified: [{ method: "read", at: [{ repo: "hanzoai/iam", path: "internal/oidc/authorize.go", symbol: "Authorize" }, { repo: "hanzoai/iam", path: "internal/oidc/mint.go", symbol: "mint" }], detail: "The redirect flow and the single mint choke point were read in the source. Rows under issue-user-token, mint-user-keys, revoke-user-keys, token-exchange evidence this. Every credential the platform issues, rotates or revokes leaves a row under a reserved action." }, { method: "audit", actions: ["issue-user-token", "mint-user-keys", "revoke-user-keys", "token-exchange"] }], maps: [{ clause: "soc2:CC6.1", strength: "partial" }, { clause: "soc2:CC6.2", strength: "partial" }, { clause: "soc2:CC6.3", strength: "partial" }, { clause: "iso27001:A.5.15", strength: "partial" }, { clause: "iso27001:A.5.16", strength: "partial" }, { clause: "iso27001:A.5.17", strength: "partial" }, { clause: "nist80053:IA", strength: "partial" }, { clause: "nist80053:AC", strength: "partial" }] }, { id: "iam.pkce.s256", claim: "A client with no registered secret must present a challenge, and only the hashed method is accepted \u2014 offering the plain method is refused rather than quietly downgraded.", mechanism: "A public client arriving with no challenge is refused at the authorization endpoint. An explicitly supplied method other than the hashed one is refused there, at the mint path, and at the token endpoint; the verifier compares against a single constant. Discovery advertises the hashed method alone.", status: "automated", enforced: [{ repo: "hanzoai/iam", path: "internal/oidc/authorize.go", symbol: "Authorize" }, { repo: "hanzoai/iam", path: "internal/oidc/pkce.go", symbol: "VerifyChallenge" }, { repo: "hanzoai/iam", path: "internal/oidc/oidc.go", symbol: "Discovery" }], verified: [{ method: "read", at: [{ repo: "hanzoai/iam", path: "internal/oidc/authorize.go", symbol: "Authorize" }, { repo: "hanzoai/iam", path: "internal/oidc/pkce.go", symbol: "VerifyChallenge" }, { repo: "hanzoai/iam", path: "internal/oidc/oidc.go", symbol: "Discovery" }], detail: "Three refusal sites were read: the authorization endpoint, the mint path and the verifier. Two boundaries are worth knowing \u2014 an OMITTED method defaults to the hashed one rather than being refused, so the method parameter is optional while the challenge is not; and the device-code grant has no challenge branch at all." }], maps: [{ clause: "soc2:CC6.1", strength: "full" }, { clause: "soc2:CC6.6", strength: "full" }, { clause: "iso27001:A.8.5", strength: "full" }, { clause: "iso27001:A.8.24", strength: "full" }, { clause: "nist80053:IA", strength: "full" }, { clause: "nist80053:SC", strength: "full" }] }, { id: "iam.password.argon2id", claim: "New passwords are hashed with a memory-hard function at 64 MiB and two passes with a random salt, the cost parameters ride inside the stored digest, and an unrecognised scheme fails closed.", mechanism: "One credential package owns hashing. It writes a digest carrying memory, passes and parallelism, so raising the cost later does not lock anyone out. Verification reads the scheme off the row and refuses anything outside the supported set; the terminal path returns false rather than falling through.", status: "automated", enforced: [{ repo: "hanzoai/iam", path: "internal/cred/cred.go", symbol: "CreateHash" }, { repo: "hanzoai/iam", path: "internal/users/users.go", symbol: "CheckPassword" }], verified: [{ method: "read", at: [{ repo: "hanzoai/iam", path: "internal/cred/cred.go", symbol: "CreateHash" }, { repo: "hanzoai/iam", path: "internal/users/users.go", symbol: "CheckPassword" }], detail: "The parameter block reads 64 MiB memory, 2 iterations, 16-byte salt, 32-byte key, and the digest is written in the standard parameterised form. An older scheme remains an accepted VERIFY path so legacy rows still authenticate; every new or updated digest uses the memory-hard one. The doc comment on the user record describes this backwards \u2014 the prose is stale, the code is not." }], maps: [{ clause: "soc2:CC6.1", strength: "full" }, { clause: "iso27001:A.5.17", strength: "full" }, { clause: "iso27001:A.8.24", strength: "full" }, { clause: "nist80053:IA", strength: "full" }, { clause: "nist80053:SC", strength: "full" }] }, { id: "iam.token.algorithms", claim: "Bearer tokens verify against a closed list of signing algorithms. Symmetric signing and the none algorithm are absent from it, so no forged header can select a path where the verifying key is also the signing key.", mechanism: "One accepted-algorithms list is handed to the parser as its valid-methods option on the single verification path. The post-quantum signature method is registered against a real implementation, not a placeholder, and is in the default build.", status: "automated", enforced: [{ repo: "hanzoai/iam", path: "internal/oidc/verify.go", symbol: "acceptedAlgs" }, { repo: "hanzoai/iam", path: "internal/oidc/mldsa.go", symbol: "init" }, { repo: "hanzoai/iam", path: "internal/authz/authz_http_test.go" }], verified: [{ method: "read", at: [{ repo: "hanzoai/iam", path: "internal/oidc/verify.go", symbol: "acceptedAlgs" }, { repo: "hanzoai/iam", path: "internal/oidc/mldsa.go", symbol: "init" }, { repo: "hanzoai/iam", path: "internal/authz/authz_http_test.go" }], detail: "A test at internal/authz/authz_http_test.go asserts this. A test forges a symmetrically-signed token and asserts it is refused at parse. The list carries two RSA variants, three NIST curves and one lattice scheme; the remaining RSA variants and the probabilistic-padding series are not accepted. Tokens from a federated provider are checked against a SEPARATE closed list with slightly different members." }], maps: [{ clause: "soc2:CC6.1", strength: "full" }, { clause: "soc2:CC6.6", strength: "full" }, { clause: "iso27001:A.8.5", strength: "full" }, { clause: "iso27001:A.8.24", strength: "full" }, { clause: "nist80053:IA", strength: "full" }, { clause: "nist80053:SC", strength: "full" }] }, { id: "iam.refresh.rotation", claim: "Refresh tokens are single-use. Spending one mints a successor in the same family; presenting a spent one deletes every token in that family, the working successor included.", mechanism: "Redemption marks the row consumed before the successor is issued, and the successor inherits the family id set when the grant was established. A request carrying an already-consumed token revokes the family and answers with a grant error.", status: "automated", enforced: [{ repo: "hanzoai/iam", path: "internal/oidc/refresh.go", symbol: "Refresh" }], verified: [{ method: "read", at: [{ repo: "hanzoai/iam", path: "internal/oidc/refresh.go", symbol: "Refresh" }], detail: "The consumed flag is set before the successor is minted, and the family cascade DELETES rows rather than only flagging them. One caveat: the cascade is best-effort \u2014 it swallows the list error and ignores each delete error while still refusing the caller \u2014 so a partial revocation fails quietly and only the caller's refusal is guaranteed." }], maps: [{ clause: "soc2:CC6.1", strength: "full" }, { clause: "soc2:CC7.2", strength: "full" }, { clause: "iso27001:A.5.17", strength: "full" }, { clause: "iso27001:A.8.16", strength: "full" }, { clause: "nist80053:IA", strength: "full" }, { clause: "nist80053:SI", strength: "full" }] }, { id: "iam.mfa.sessions", claim: "Adding a second factor, removing one, or changing which is preferred drops every other session and clears the remember-this-device window.", mechanism: "All three mutations run through one save path, which revokes every session but the calling one and blanks the remember deadline and its digest. A session id pruned from the row is treated as revoked on its next resolve.", status: "automated", enforced: [{ repo: "hanzoai/iam", path: "internal/mfa/mfa.go", symbol: "save" }, { repo: "hanzoai/iam", path: "internal/sessions/resolve.go", symbol: "RevokeOthers" }], verified: [{ method: "read", at: [{ repo: "hanzoai/iam", path: "internal/mfa/mfa.go", symbol: "save" }, { repo: "hanzoai/iam", path: "internal/sessions/resolve.go", symbol: "RevokeOthers" }], detail: "One shared save path revokes other sessions and clears the remember window. Worth knowing: this revokes BROWSER SESSIONS. Access and refresh tokens already outstanding for that user are not revoked here, so a token issued before the change keeps working until it expires or its family is revoked by another route." }], maps: [{ clause: "soc2:CC6.1", strength: "full" }, { clause: "soc2:CC6.3", strength: "full" }, { clause: "iso27001:A.5.17", strength: "full" }, { clause: "iso27001:A.8.5", strength: "full" }, { clause: "nist80053:IA", strength: "full" }, { clause: "nist80053:AC", strength: "full" }] }, { id: "iam.scim.users", claim: "A directory provisions users over the standard protocol \u2014 create, update, replace, deactivate, delete, with filter and patch. Someone removed from your directory loses their account by that act.", mechanism: "A provisioning surface routes the full user lifecycle and publishes its service-provider configuration, schemas and resource types for a client to discover.", status: "automated", enforced: [{ repo: "hanzoai/iam", path: "internal/scim/scim.go", symbol: "Route" }, { repo: "hanzoai/iam", path: "internal/scim/schemas.go", symbol: "ServiceProviderConfig" }], verified: [{ method: "read", at: [{ repo: "hanzoai/iam", path: "internal/scim/scim.go", symbol: "Route" }, { repo: "hanzoai/iam", path: "internal/scim/schemas.go", symbol: "ServiceProviderConfig" }], detail: "The user lifecycle routes are all present. The published capabilities declare bulk, sort and etag as false, so a client is told what is missing rather than discovering it at runtime." }], maps: [{ clause: "soc2:CC6.2", strength: "full" }, { clause: "soc2:CC6.3", strength: "full" }, { clause: "iso27001:A.5.16", strength: "full" }, { clause: "iso27001:A.5.18", strength: "full" }, { clause: "iso27001:A.6.5", strength: "full" }, { clause: "nist80053:AC", strength: "full" }, { clause: "nist80053:PS", strength: "full" }] }, { id: "iam.scim.groups", claim: "Group membership arrives from a customer directory and drives role assignment.", mechanism: "None. There is no group route, no handler, and no group resource type \u2014 the published resource-type set has exactly one member.", status: "absent", note: "Absent, not stubbed. Role assignment cannot be driven from a customer directory today: users provision, group membership does not. A request for the group collection answers a plain 404 rather than a protocol error document, because the published-resource path covers only schema and resource-type lookups.", enforced: [{ repo: "hanzoai/iam", path: "internal/scim/schemas.go", symbol: "resourceTypes" }], verified: [{ method: "read", at: [{ repo: "hanzoai/iam", path: "internal/scim/schemas.go", symbol: "resourceTypes" }], detail: "The resource-type list has one member, User. No group handler exists under any spelling." }], maps: [{ clause: "soc2:CC6.3", strength: "partial" }, { clause: "iso27001:A.5.18", strength: "partial" }, { clause: "nist80053:AC", strength: "partial" }] }, { id: "iam.passkey.signin", claim: "A registered passkey can be used to sign in.", mechanism: "None in the running build. Passkey credentials can be registered and managed, and there is no assertion ceremony to challenge one \u2014 no begin-login route of any spelling exists.", status: "absent", note: "The capability flag returns false and the login descriptor is masked, so no screen offers passkey sign-in. That is the only honest thing a login screen can do about a method the server cannot perform. Second factors that do work: an authenticator app, SMS and email, with recovery codes.", enforced: [{ repo: "hanzoai/iam", path: "pkg/schema/passkey.go", symbol: "PasskeySignin" }, { repo: "hanzoai/iam", path: "internal/webauthn/webauthn.go", symbol: "Route" }, { repo: "hanzoai/iam", path: "internal/oidc/frontdoor_passkey_test.go" }], verified: [{ method: "read", at: [{ repo: "hanzoai/iam", path: "pkg/schema/passkey.go", symbol: "PasskeySignin" }, { repo: "hanzoai/iam", path: "internal/webauthn/webauthn.go", symbol: "Route" }, { repo: "hanzoai/iam", path: "internal/oidc/frontdoor_passkey_test.go" }], detail: "A test at internal/oidc/frontdoor_passkey_test.go asserts this. A test names the four candidate ceremony paths and asserts all four answer 404. The credential surface offers registration and management only." }], maps: [{ clause: "soc2:CC6.1", strength: "partial" }, { clause: "iso27001:A.8.5", strength: "partial" }, { clause: "nist80053:IA", strength: "partial" }] }, { id: "authz.path.grant", claim: "A resource has a path, and a grant covers a path and everything below it, so org-wide access, one workspace, and a narrowed agent credential all fall out of one check.", mechanism: "One authorization function tests the requested path against the paths a caller holds, admitting a path and its descendants.", status: "partial", note: "The containment model is real and it is one function. What it is built on is a byte-by-byte prefix comparison, which does not do what the model needs \u2014 that is recorded separately as authz.path.segment, and it is why this is partial rather than automated.", enforced: [{ repo: "hanzoai/iam", path: "internal/authz/authz.go", symbol: "pathAuthorized" }], verified: [{ method: "read", at: [{ repo: "hanzoai/iam", path: "internal/authz/authz.go", symbol: "pathAuthorized" }], detail: "One function answers the containment question for every caller shape." }], maps: [{ clause: "soc2:CC6.1", strength: "partial" }, { clause: "soc2:CC6.3", strength: "partial" }, { clause: "iso27001:A.5.15", strength: "partial" }, { clause: "iso27001:A.5.18", strength: "partial" }, { clause: "iso27001:A.8.3", strength: "partial" }, { clause: "nist80053:AC", strength: "partial" }] }, { id: "authz.path.segment", claim: "A grant on one path does not cover a longer path that merely starts with the same characters, because the comparison advances a segment at a time.", mechanism: "None. The comparison is a byte prefix. The collisions someone already hit are handled by a separate exact-match table rather than by making the comparison segment-wise.", status: "absent", note: "Recorded absent because the mechanism named in the claim does not exist \u2014 not because path authorization is missing. The comment above the function records hitting this exact hazard, where one action name is a character prefix of another, and working around it with an exact-match map. That workaround covers the collisions someone thought of; a segment walk would make the whole class impossible. A segment-wise implementation exists elsewhere in the estate but is not on this path.", enforced: [{ repo: "hanzoai/iam", path: "internal/authz/authz.go", symbol: "pathAuthorized" }], verified: [{ method: "read", at: [{ repo: "hanzoai/iam", path: "internal/authz/authz.go", symbol: "pathAuthorized" }], detail: "The function body is a byte prefix test, and the comment above it documents the workaround." }], maps: [{ clause: "soc2:CC6.1", strength: "partial" }, { clause: "soc2:CC6.3", strength: "partial" }, { clause: "iso27001:A.5.15", strength: "partial" }, { clause: "iso27001:A.8.3", strength: "partial" }, { clause: "nist80053:AC", strength: "partial" }] }, { id: "edge.identity.headers", claim: "Headers naming an organization, a user, an email or a role are stripped at the edge before a handler reads one, and identity is written back only from a verified token.", mechanism: "The request middleware deletes every authority header and every sub-scope header by name, then re-mints them from validated claims. A second layer deletes any header in two reserved families by prefix, so a new name cannot arrive unhandled.", status: "automated", enforced: [{ repo: "hanzoai/cloud", path: "middleware_identity.go", symbol: "authorityHeaders" }, { repo: "hanzoai/base", path: "tools/claims/claims.go", symbol: "StripIdentityHeaders" }], verified: [{ method: "read", at: [{ repo: "hanzoai/cloud", path: "middleware_identity.go", symbol: "authorityHeaders" }, { repo: "hanzoai/base", path: "tools/claims/claims.go", symbol: "StripIdentityHeaders" }], detail: "The deletes run before anything reads a header, and the re-mint draws only from validated claims. The organization a caller asks to act in is honoured only where the signed membership already admits it; asking for one they are not in falls back to their own." }], maps: [{ clause: "soc2:CC6.1", strength: "full" }, { clause: "soc2:CC6.6", strength: "full" }, { clause: "iso27001:A.8.3", strength: "full" }, { clause: "iso27001:A.8.20", strength: "full" }, { clause: "nist80053:AC", strength: "full" }, { clause: "nist80053:SC", strength: "full" }] }, { id: "base.tenant.file", claim: "An organization's data is its own database file, so a query cannot reach across organizations \u2014 there is no second file open to reach into.", mechanism: "One function is the only way a subsystem opens a per-organization database, and it builds the path from the organization slug. A subsystem cannot name a file outside its tenant because it never builds the path itself.", status: "automated", enforced: [{ repo: "hanzoai/cloud", path: "orgdb.go", symbol: "OpenOrgDB" }], verified: [{ method: "read", at: [{ repo: "hanzoai/cloud", path: "orgdb.go", symbol: "OpenOrgDB" }], detail: "The path is composed from the organization slug and the subsystem name; every caller goes through the one opener." }], maps: [{ clause: "soc2:CC6.1", strength: "full" }, { clause: "soc2:C1.1", strength: "full" }, { clause: "iso27001:A.8.3", strength: "full" }, { clause: "iso27001:A.8.12", strength: "full" }, { clause: "nist80053:AC", strength: "full" }, { clause: "nist80053:SC", strength: "full" }] }, { id: "base.tenant.key", claim: "Each database is opened under a key derived for that organization alone from one master, so a leaked key is worth one tenant instead of the estate.", mechanism: "A key is derived from one master through a standard derivation function, bound to the namespace that owns it. The derivation is a pure function of its inputs, so a file reopens after a restart with nothing kept beside it, and a master of the wrong length is an error rather than a quiet fall back to no key.", status: "partial", note: "Two different derivations answer to this claim and only one is per-organization. The data plane derives per organization and per user, as the claim describes. The cloud file layer derives per FILE, from a random file id \u2014 so two files of the SAME organization have unrelated keys, and the key is not a function of the organization. Per-file derivation is not weaker against a stolen file, it is stronger; it just does not support a sentence that says the key belongs to the organization.", enforced: [{ repo: "hanzoai/base", path: "plugins/org/org_db.go", symbol: "orgDEK" }, { repo: "hanzoai/cloud", path: "cek/cek.go", symbol: "Derive" }], verified: [{ method: "read", at: [{ repo: "hanzoai/base", path: "plugins/org/org_db.go", symbol: "orgDEK" }, { repo: "hanzoai/cloud", path: "cek/cek.go", symbol: "Derive" }], detail: "Both derivations were read side by side. They use the same primitive and bind different things into it." }], maps: [{ clause: "soc2:CC6.1", strength: "partial" }, { clause: "soc2:C1.1", strength: "partial" }, { clause: "iso27001:A.8.24", strength: "partial" }, { clause: "iso27001:A.8.12", strength: "partial" }, { clause: "nist80053:SC", strength: "partial" }] }, { id: "audit.request", claim: "One row records who acted, from where, the method and path, the action, the status the server returned, and the time.", mechanism: "Request middleware writes one record per request from the validated principal and the response, into a table with a monotonic sequence. Credential-shaped path segments and the user agent are scrubbed before the row is written.", status: "automated", enforced: [{ repo: "hanzoai/cloud", path: "audit_middleware.go", symbol: "Audit" }, { repo: "hanzoai/cloud", path: "audit/store.go", symbol: "Append" }, { repo: "hanzoai/cloud", path: "audit/record.go" }], verified: [{ method: "read", at: [{ repo: "hanzoai/cloud", path: "audit_middleware.go", symbol: "Audit" }, { repo: "hanzoai/cloud", path: "audit/store.go", symbol: "Append" }, { repo: "hanzoai/cloud", path: "audit/record.go" }], detail: "There are TWO trails and they are not the same shape. This one is per request. The identity service keeps a second record type carrying organization, user, address, method, request path, action, payload, response and status \u2014 but it is written for accountable actions rather than for every request, and its address field is deliberately left empty because behind the ingress the peer address is the ingress pod, which identifies nothing while still being personal data." }], maps: [{ clause: "soc2:CC7.2", strength: "full" }, { clause: "soc2:CC4.1", strength: "full" }, { clause: "iso27001:A.8.15", strength: "full" }, { clause: "iso27001:A.8.16", strength: "full" }, { clause: "nist80053:AU", strength: "full" }] }, { id: "audit.redaction", claim: "What the trail records is scrubbed of secrets before it is written.", mechanism: "Payloads emitted with a record are walked recursively against a denylist and matching values are replaced with a marker. The request path is scrubbed of credential-shaped segments and the user agent is scrubbed, before the row is written.", status: "partial", note: "A Hanzo page describes this as the request body recorded with passwords masked. No request body is captured anywhere on this path: the middleware builds a row from method, path, status and principal only, and the identity service's two writers set the payload field explicitly. Redaction is real; the body capture it is described as protecting does not happen. Nothing is leaking \u2014 the sentence is wrong, and that is the defect this entry records.", enforced: [{ repo: "hanzoai/cloud", path: "audit/redact.go", symbol: "Redact" }, { repo: "hanzoai/cloud", path: "audit_middleware.go", symbol: "scrubPath" }], verified: [{ method: "read", at: [{ repo: "hanzoai/cloud", path: "audit/redact.go", symbol: "Redact" }, { repo: "hanzoai/cloud", path: "audit_middleware.go", symbol: "scrubPath" }], detail: "The denylist covers password, secret, token, client secret and private key among others, and the walk is recursive. The middleware never reads a request body, so there is no captured body to mask." }], maps: [{ clause: "soc2:CC6.1", strength: "partial" }, { clause: "iso27001:A.8.11", strength: "partial" }, { clause: "iso27001:A.8.12", strength: "partial" }, { clause: "nist80053:AU", strength: "partial" }, { clause: "nist80053:SC", strength: "partial" }] }, { id: "audit.reserved", claim: "Rows recording the platform's accountable actions are reserved: the API refuses to create, correct or delete one, so evidence cannot be forged with an invented grant or quietly trimmed of a real one.", mechanism: "One predicate names the reserved actions, and the audit surface calls it on every write verb \u2014 on create, on delete, and on update twice, for the stored row's action and for the incoming one, so a row cannot be forged by relabelling one you own.", status: "automated", enforced: [{ repo: "hanzoai/iam", path: "pkg/schema/audit_log.go", symbol: "PlatformWritten" }, { repo: "hanzoai/iam", path: "internal/auditlogs/auditlogs.go", symbol: "refusePlatformAction" }, { repo: "hanzoai/cloud", path: "apps/admin/audit/audit.go", symbol: "Route" }, { repo: "hanzoai/iam", path: "internal/auditlogs/reserved_test.go" }], verified: [{ method: "read", at: [{ repo: "hanzoai/iam", path: "pkg/schema/audit_log.go", symbol: "PlatformWritten" }, { repo: "hanzoai/iam", path: "internal/auditlogs/auditlogs.go", symbol: "refusePlatformAction" }, { repo: "hanzoai/cloud", path: "apps/admin/audit/audit.go", symbol: "Route" }, { repo: "hanzoai/iam", path: "internal/auditlogs/reserved_test.go" }], detail: "A test at internal/auditlogs/reserved_test.go asserts this. The test seeds a reserved row the way the platform writes one, then attempts to create, update, relabel and delete it through the API, and asserts all four are refused. Remove the gate and the test goes red. The cloud trail is stronger still: it publishes no write route at all, only a list and a chain check. Rows under consent-training, issue-user-token, mint-user-keys, revoke-user-keys, token-exchange evidence this. The five reserved actions. A row carrying one of these is evidence precisely because the subject of the evidence cannot write it." }, { method: "audit", actions: ["consent-training", "issue-user-token", "mint-user-keys", "revoke-user-keys", "token-exchange"] }], maps: [{ clause: "soc2:CC7.2", strength: "full" }, { clause: "soc2:CC4.1", strength: "full" }, { clause: "iso27001:A.5.28", strength: "full" }, { clause: "iso27001:A.8.15", strength: "full" }, { clause: "nist80053:AU", strength: "full" }] }, { id: "audit.index", claim: "Organization, user, action and time each carry an index, so a reviewer's question is a lookup rather than a walk through the whole trail.", mechanism: "The cloud audit table declares real indexes on organization with sequence, action with sequence, result with sequence, and timestamp.", status: "partial", note: "Partial on two counts, both measured rather than reasoned. First, the cloud trail indexes organization, action and time but NOT user \u2014 so of the four questions named, 'everything one person did' is the one that still walks the table. Second, the identity service's record declares index tags on organization, user, action and time and they are INERT: the tag parser reads only two directives and index is not one of them, and that backend stores every entity as a JSON payload in a single shared table with indexes on kind, parent and deleted alone. The declaration exists; on this backend it materializes nothing.", enforced: [{ repo: "hanzoai/cloud", path: "audit/store.go", symbol: "schema" }, { repo: "hanzoai/orm", path: "model.go", symbol: "parseStructTags" }], verified: [{ method: "read", at: [{ repo: "hanzoai/cloud", path: "audit/store.go", symbol: "schema" }, { repo: "hanzoai/orm", path: "model.go", symbol: "parseStructTags" }], detail: "The index statements in the cloud store were read directly. The inert-tag finding was measured, not inferred: an entity was written through the record layer to a real database file and the resulting schema read back, which showed one shared table with a JSON payload column and three indexes, none of them on the declared fields." }], maps: [{ clause: "soc2:CC7.2", strength: "partial" }, { clause: "iso27001:A.8.15", strength: "partial" }, { clause: "iso27001:A.8.16", strength: "partial" }, { clause: "nist80053:AU", strength: "partial" }] }, { id: "audit.chain", claim: "Each record carries the previous record's hash and its own, so a row removed or altered after the fact is detectable rather than silent.", mechanism: "Records are appended over a monotonic sequence, each carrying the prior hash, and an endpoint walks the chain and reports where it breaks. The store issues no update and no delete.", status: "automated", enforced: [{ repo: "hanzoai/cloud", path: "audit/record.go", symbol: "Hash" }, { repo: "hanzoai/cloud", path: "apps/admin/audit/audit.go", symbol: "Verify" }, { repo: "hanzoai/cloud", path: "audit/store.go" }], verified: [{ method: "read", at: [{ repo: "hanzoai/cloud", path: "audit/record.go", symbol: "Hash" }, { repo: "hanzoai/cloud", path: "apps/admin/audit/audit.go", symbol: "Verify" }, { repo: "hanzoai/cloud", path: "audit/store.go" }], detail: "Every record carries a previous hash and its own, the sequence is the primary key, and the store package issues no update and no delete statement anywhere." }], maps: [{ clause: "soc2:CC7.2", strength: "full" }, { clause: "soc2:PI1.5", strength: "full" }, { clause: "iso27001:A.5.28", strength: "full" }, { clause: "iso27001:A.8.15", strength: "full" }, { clause: "nist80053:AU", strength: "full" }, { clause: "nist80053:SI", strength: "full" }] }, { id: "privacy.consent", claim: "A member's training-consent answer is recorded in the trail as a row the organization cannot author, alter or remove.", mechanism: "The consent endpoint writes a row carrying the before and after state under a reserved action, inside the same transaction as the change itself, so the record and the change land together or not at all.", status: "automated", enforced: [{ repo: "hanzoai/iam", path: "internal/oidc/consent.go", symbol: "auditConsent" }, { repo: "hanzoai/iam", path: "pkg/schema/audit_log.go", symbol: "ActionConsentTraining" }], verified: [{ method: "read", at: [{ repo: "hanzoai/iam", path: "internal/oidc/consent.go", symbol: "auditConsent" }, { repo: "hanzoai/iam", path: "pkg/schema/audit_log.go", symbol: "ActionConsentTraining" }], detail: "Rows under consent-training evidence this. One row per transition, carrying the from and to state. The action is reserved, which is what makes the row evidence rather than an assertion." }, { method: "audit", actions: ["consent-training"] }], maps: [{ clause: "soc2:P2.1", strength: "full" }, { clause: "soc2:P6.2", strength: "full" }, { clause: "iso27001:A.5.34", strength: "full" }, { clause: "nist80053:PT", strength: "full" }, { clause: "nist80053:AU", strength: "full" }] }, { id: "kms.signing.handle", claim: "The signing interface takes a key id and some bytes and returns a signature. The private key is made inside an external module and stays there, so there is no moment when it exists in our process to be logged, leaked or written into a crash dump.", mechanism: "None found. Signing keys are held as strings on the identity service's own records and parsed in the running binary to build a signer. The cloud key service is embedded in the binary, with a master key read from the environment.", status: "absent", note: "Recorded absent after searching the four repositories that serve this platform for any external key-service client. There is none, and the key service exposes no signing function at all. Private keys are held and used in-process today. Threshold signing is wired but fails closed unless a backend is configured, so it is not a path in service. A Hanzo page states this control in the present tense and names four external modules; on the evidence available it is a roadmap item. This is the most consequential gap in this inventory.", enforced: [{ repo: "hanzoai/iam", path: "pkg/schema/cert.go", symbol: "PrivateKey" }, { repo: "hanzoai/cloud", path: "clients/kms/kms.go", symbol: "New" }, { repo: "hanzoai/iam", path: "internal/oidc/jwt.go" }], verified: [{ method: "read", at: [{ repo: "hanzoai/iam", path: "pkg/schema/cert.go", symbol: "PrivateKey" }, { repo: "hanzoai/cloud", path: "clients/kms/kms.go", symbol: "New" }, { repo: "hanzoai/iam", path: "internal/oidc/jwt.go" }], detail: "The private key is a string field on a record, and the signer is built by parsing it in the running binary. The one hardware-module mention in the tree is a note explaining why a dependency was NOT taken." }], maps: [{ clause: "soc2:CC6.1", strength: "partial" }, { clause: "soc2:CC6.7", strength: "partial" }, { clause: "iso27001:A.8.24", strength: "partial" }, { clause: "nist80053:SC", strength: "partial" }] }, { id: "crypto.validation", claim: "The cryptographic modules this platform runs hold an independent validation.", mechanism: "None. The code implements published standards, the lattice-based key-encapsulation and signature schemes among them. Implementing a standard is not the same as holding a validation, and a validation belongs to the vendor of a module rather than to the software that calls it.", status: "absent", note: "Carried so the gap is counted rather than omitted. There is nothing to read here \u2014 no certificate exists to point at \u2014 so this entry rests on a reading of what is absent rather than on anything that could fail. Where a deployment needs validated modules, that is a question about which module signs, and it is answered by kms.signing.handle, which is itself absent.", enforced: [{ repo: "hanzoai/iam", path: "internal/oidc/mldsa.go", symbol: "init" }], verified: [{ method: "read", at: [{ repo: "hanzoai/iam", path: "internal/oidc/mldsa.go", symbol: "init" }], detail: "The signature scheme is implemented in software inside our own binary. No external validated module is reached." }], maps: [{ clause: "iso27001:A.8.24", strength: "partial" }, { clause: "nist80053:SC", strength: "partial" }] }];
+  var define_CONTROLS_default = [{ id: "iam.issuer", claim: "Hanzo IAM issues every credential, and \
+signing in is an OIDC redirect rather than a form any application holds.", mechanism: "The authoriza\
+tion endpoint validates the request and returns a code; a single mint path turns that code into toke\
+ns. Everything else in the estate consumes tokens rather than issuing them.", status: "partial", note: "\
+Partial for scope, not for quality. The redirect flow and the single mint path are both there to rea\
+d. Establishing that NOTHING else in the estate issues a credential means auditing every service for\
+ a second path, and that sweep has not been done \u2014 so the narrower word is the honest one.", enforced: [
+  { repo: "hanzoai/iam", path: "internal/oidc/authorize.go", symbol: "Authorize" }, { repo: "hanzoai\
+/iam", path: "internal/oidc/mint.go", symbol: "mint" }], verified: [{ method: "read", at: [{ repo: "\
+hanzoai/iam", path: "internal/oidc/authorize.go", symbol: "Authorize" }, { repo: "hanzoai/iam", path: "\
+internal/oidc/mint.go", symbol: "mint" }], detail: "The redirect flow and the single mint choke poin\
+t were read in the source. Rows under issue-user-token, mint-user-keys, revoke-user-keys, token-exch\
+ange evidence this. Every credential the platform issues, rotates or revokes leaves a row under a re\
+served action." }, { method: "audit", actions: ["issue-user-token", "mint-user-keys", "revoke-user-k\
+eys", "token-exchange"] }], maps: [{ clause: "soc2:CC6.1", strength: "partial" }, { clause: "soc2:CC\
+6.2", strength: "partial" }, { clause: "soc2:CC6.3", strength: "partial" }, { clause: "iso27001:A.5.\
+15", strength: "partial" }, { clause: "iso27001:A.5.16", strength: "partial" }, { clause: "iso27001:\
+A.5.17", strength: "partial" }, { clause: "nist80053:IA", strength: "partial" }, { clause: "nist8005\
+3:AC", strength: "partial" }] }, { id: "iam.pkce.s256", claim: "A client with no registered secret m\
+ust present a challenge, and only the hashed method is accepted \u2014 offering the plain method is refus\
+ed rather than quietly downgraded.", mechanism: "A public client arriving with no challenge is refus\
+ed at the authorization endpoint. An explicitly supplied method other than the hashed one is refused\
+ there, at the mint path, and at the token endpoint; the verifier compares against a single constant\
+. Discovery advertises the hashed method alone.", status: "automated", enforced: [{ repo: "hanzoai/i\
+am", path: "internal/oidc/authorize.go", symbol: "Authorize" }, { repo: "hanzoai/iam", path: "intern\
+al/oidc/pkce.go", symbol: "VerifyChallenge" }, { repo: "hanzoai/iam", path: "internal/oidc/oidc.go",
+  symbol: "Discovery" }], verified: [{ method: "read", at: [{ repo: "hanzoai/iam", path: "internal/o\
+idc/authorize.go", symbol: "Authorize" }, { repo: "hanzoai/iam", path: "internal/oidc/pkce.go", symbol: "\
+VerifyChallenge" }, { repo: "hanzoai/iam", path: "internal/oidc/oidc.go", symbol: "Discovery" }], detail: "\
+Three refusal sites were read: the authorization endpoint, the mint path and the verifier. Two bound\
+aries are worth knowing \u2014 an OMITTED method defaults to the hashed one rather than being refused, so\
+ the method parameter is optional while the challenge is not; and the device-code grant has no chall\
+enge branch at all." }], maps: [{ clause: "soc2:CC6.1", strength: "full" }, { clause: "soc2:CC6.6", strength: "\
+full" }, { clause: "iso27001:A.8.5", strength: "full" }, { clause: "iso27001:A.8.24", strength: "ful\
+l" }, { clause: "nist80053:IA", strength: "full" }, { clause: "nist80053:SC", strength: "full" }] },
+  { id: "iam.password.argon2id", claim: "New passwords are hashed with a memory-hard function at 64 \
+MiB and two passes with a random salt, the cost parameters ride inside the stored digest, and an unr\
+ecognised scheme fails closed.", mechanism: "One credential package owns hashing. It writes a digest\
+ carrying memory, passes and parallelism, so raising the cost later does not lock anyone out. Verifi\
+cation reads the scheme off the row and refuses anything outside the supported set; the terminal pat\
+h returns false rather than falling through.", status: "automated", enforced: [{ repo: "hanzoai/iam",
+  path: "internal/cred/cred.go", symbol: "CreateHash" }, { repo: "hanzoai/iam", path: "internal/user\
+s/users.go", symbol: "CheckPassword" }], verified: [{ method: "read", at: [{ repo: "hanzoai/iam", path: "\
+internal/cred/cred.go", symbol: "CreateHash" }, { repo: "hanzoai/iam", path: "internal/users/users.g\
+o", symbol: "CheckPassword" }], detail: "The parameter block reads 64 MiB memory, 2 iterations, 16-b\
+yte salt, 32-byte key, and the digest is written in the standard parameterised form. An older scheme\
+ remains an accepted VERIFY path so legacy rows still authenticate; every new or updated digest uses\
+ the memory-hard one. The doc comment on the user record describes this backwards \u2014 the prose is sta\
+le, the code is not." }], maps: [{ clause: "soc2:CC6.1", strength: "full" }, { clause: "iso27001:A.5\
+.17", strength: "full" }, { clause: "iso27001:A.8.24", strength: "full" }, { clause: "nist80053:IA",
+  strength: "full" }, { clause: "nist80053:SC", strength: "full" }] }, { id: "iam.token.algorithms",
+  claim: "Bearer tokens verify against a closed list of signing algorithms. Symmetric signing and th\
+e none algorithm are absent from it, so no forged header can select a path where the verifying key i\
+s also the signing key.", mechanism: "One accepted-algorithms list is handed to the parser as its va\
+lid-methods option on the single verification path. The post-quantum signature method is registered \
+against a real implementation, not a placeholder, and is in the default build.", status: "automated",
+  enforced: [{ repo: "hanzoai/iam", path: "internal/oidc/verify.go", symbol: "acceptedAlgs" }, { repo: "\
+hanzoai/iam", path: "internal/oidc/mldsa.go", symbol: "init" }, { repo: "hanzoai/iam", path: "intern\
+al/authz/authz_http_test.go" }], verified: [{ method: "read", at: [{ repo: "hanzoai/iam", path: "int\
+ernal/oidc/verify.go", symbol: "acceptedAlgs" }, { repo: "hanzoai/iam", path: "internal/oidc/mldsa.g\
+o", symbol: "init" }, { repo: "hanzoai/iam", path: "internal/authz/authz_http_test.go" }], detail: "\
+A test at internal/authz/authz_http_test.go asserts this. A test forges a symmetrically-signed token\
+ and asserts it is refused at parse. The list carries two RSA variants, three NIST curves and one la\
+ttice scheme; the remaining RSA variants and the probabilistic-padding series are not accepted. Toke\
+ns from a federated provider are checked against a SEPARATE closed list with slightly different memb\
+ers." }], maps: [{ clause: "soc2:CC6.1", strength: "full" }, { clause: "soc2:CC6.6", strength: "full" },
+  { clause: "iso27001:A.8.5", strength: "full" }, { clause: "iso27001:A.8.24", strength: "full" }, {
+  clause: "nist80053:IA", strength: "full" }, { clause: "nist80053:SC", strength: "full" }] }, { id: "\
+iam.refresh.rotation", claim: "Refresh tokens are single-use. Spending one mints a successor in the \
+same family; presenting a spent one deletes every token in that family, the working successor includ\
+ed.", mechanism: "Redemption marks the row consumed before the successor is issued, and the successo\
+r inherits the family id set when the grant was established. A request carrying an already-consumed \
+token revokes the family and answers with a grant error.", status: "automated", enforced: [{ repo: "\
+hanzoai/iam", path: "internal/oidc/refresh.go", symbol: "Refresh" }], verified: [{ method: "read", at: [
+  { repo: "hanzoai/iam", path: "internal/oidc/refresh.go", symbol: "Refresh" }], detail: "The consum\
+ed flag is set before the successor is minted, and the family cascade DELETES rows rather than only \
+flagging them. One caveat: the cascade is best-effort \u2014 it swallows the list error and ignores each \
+delete error while still refusing the caller \u2014 so a partial revocation fails quietly and only the ca\
+ller's refusal is guaranteed." }], maps: [{ clause: "soc2:CC6.1", strength: "full" }, { clause: "soc\
+2:CC7.2", strength: "full" }, { clause: "iso27001:A.5.17", strength: "full" }, { clause: "iso27001:A\
+.8.16", strength: "full" }, { clause: "nist80053:IA", strength: "full" }, { clause: "nist80053:SI", strength: "\
+full" }] }, { id: "iam.mfa.sessions", claim: "Adding a second factor, removing one, or changing whic\
+h is preferred drops every other session and clears the remember-this-device window.", mechanism: "A\
+ll three mutations run through one save path, which revokes every session but the calling one and bl\
+anks the remember deadline and its digest. A session id pruned from the row is treated as revoked on\
+ its next resolve.", status: "automated", enforced: [{ repo: "hanzoai/iam", path: "internal/mfa/mfa.\
+go", symbol: "save" }, { repo: "hanzoai/iam", path: "internal/sessions/resolve.go", symbol: "RevokeO\
+thers" }], verified: [{ method: "read", at: [{ repo: "hanzoai/iam", path: "internal/mfa/mfa.go", symbol: "\
+save" }, { repo: "hanzoai/iam", path: "internal/sessions/resolve.go", symbol: "RevokeOthers" }], detail: "\
+One shared save path revokes other sessions and clears the remember window. Worth knowing: this revo\
+kes BROWSER SESSIONS. Access and refresh tokens already outstanding for that user are not revoked he\
+re, so a token issued before the change keeps working until it expires or its family is revoked by a\
+nother route." }], maps: [{ clause: "soc2:CC6.1", strength: "full" }, { clause: "soc2:CC6.3", strength: "\
+full" }, { clause: "iso27001:A.5.17", strength: "full" }, { clause: "iso27001:A.8.5", strength: "ful\
+l" }, { clause: "nist80053:IA", strength: "full" }, { clause: "nist80053:AC", strength: "full" }] },
+  { id: "iam.scim.users", claim: "A directory provisions users over the standard protocol \u2014 create, \
+update, replace, deactivate, delete, with filter and patch. Someone removed from your directory lose\
+s their account by that act.", mechanism: "A provisioning surface routes the full user lifecycle and\
+ publishes its service-provider configuration, schemas and resource types for a client to discover.",
+  status: "automated", enforced: [{ repo: "hanzoai/iam", path: "internal/scim/scim.go", symbol: "Rou\
+te" }, { repo: "hanzoai/iam", path: "internal/scim/schemas.go", symbol: "ServiceProviderConfig" }], verified: [
+  { method: "read", at: [{ repo: "hanzoai/iam", path: "internal/scim/scim.go", symbol: "Route" }, { repo: "\
+hanzoai/iam", path: "internal/scim/schemas.go", symbol: "ServiceProviderConfig" }], detail: "The use\
+r lifecycle routes are all present. The published capabilities declare bulk, sort and etag as false,\
+ so a client is told what is missing rather than discovering it at runtime." }], maps: [{ clause: "s\
+oc2:CC6.2", strength: "full" }, { clause: "soc2:CC6.3", strength: "full" }, { clause: "iso27001:A.5.\
+16", strength: "full" }, { clause: "iso27001:A.5.18", strength: "full" }, { clause: "iso27001:A.6.5",
+  strength: "full" }, { clause: "nist80053:AC", strength: "full" }, { clause: "nist80053:PS", strength: "\
+full" }] }, { id: "iam.scim.groups", claim: "Group membership arrives from a customer directory and \
+drives role assignment.", mechanism: "None. There is no group route, no handler, and no group resour\
+ce type \u2014 the published resource-type set has exactly one member.", status: "absent", note: "Ab\
+sent, not stubbed. Role assignment cannot be driven from a customer directory today: users provision\
+, group membership does not. A request for the group collection answers a plain 404 rather than a pr\
+otocol error document, because the published-resource path covers only schema and resource-type look\
+ups.", enforced: [{ repo: "hanzoai/iam", path: "internal/scim/schemas.go", symbol: "resourceTypes" }],
+  verified: [{ method: "read", at: [{ repo: "hanzoai/iam", path: "internal/scim/schemas.go", symbol: "\
+resourceTypes" }], detail: "The resource-type list has one member, User. No group handler exists und\
+er any spelling." }], maps: [{ clause: "soc2:CC6.3", strength: "partial" }, { clause: "iso27001:A.5.\
+18", strength: "partial" }, { clause: "nist80053:AC", strength: "partial" }] }, { id: "iam.passkey.s\
+ignin", claim: "A registered passkey can be used to sign in.", mechanism: "None in the running build\
+. Passkey credentials can be registered and managed, and there is no assertion ceremony to challenge\
+ one \u2014 no begin-login route of any spelling exists.", status: "absent", note: "The capability f\
+lag returns false and the login descriptor is masked, so no screen offers passkey sign-in. That is t\
+he only honest thing a login screen can do about a method the server cannot perform. Second factors \
+that do work: an authenticator app, SMS and email, with recovery codes.", enforced: [{ repo: "hanzoa\
+i/iam", path: "pkg/schema/passkey.go", symbol: "PasskeySignin" }, { repo: "hanzoai/iam", path: "inte\
+rnal/webauthn/webauthn.go", symbol: "Route" }, { repo: "hanzoai/iam", path: "internal/oidc/frontdoor\
+_passkey_test.go" }], verified: [{ method: "read", at: [{ repo: "hanzoai/iam", path: "pkg/schema/pas\
+skey.go", symbol: "PasskeySignin" }, { repo: "hanzoai/iam", path: "internal/webauthn/webauthn.go", symbol: "\
+Route" }, { repo: "hanzoai/iam", path: "internal/oidc/frontdoor_passkey_test.go" }], detail: "A test\
+ at internal/oidc/frontdoor_passkey_test.go asserts this. A test names the four candidate ceremony p\
+aths and asserts all four answer 404. The credential surface offers registration and management only\
+." }], maps: [{ clause: "soc2:CC6.1", strength: "partial" }, { clause: "iso27001:A.8.5", strength: "\
+partial" }, { clause: "nist80053:IA", strength: "partial" }] }, { id: "authz.path.grant", claim: "A \
+resource has a path, and a grant covers a path and everything below it, so org-wide access, one work\
+space, and a narrowed agent credential all fall out of one check.", mechanism: "One authorization fu\
+nction tests the requested path against the paths a caller holds, admitting a path and its descendan\
+ts.", status: "partial", note: "The containment model is real and it is one function. What it is bui\
+lt on is a byte-by-byte prefix comparison, which does not do what the model needs \u2014 that is recorded\
+ separately as authz.path.segment, and it is why this is partial rather than automated.", enforced: [
+  { repo: "hanzoai/iam", path: "internal/authz/authz.go", symbol: "pathAuthorized" }], verified: [{ method: "\
+read", at: [{ repo: "hanzoai/iam", path: "internal/authz/authz.go", symbol: "pathAuthorized" }], detail: "\
+One function answers the containment question for every caller shape." }], maps: [{ clause: "soc2:CC\
+6.1", strength: "partial" }, { clause: "soc2:CC6.3", strength: "partial" }, { clause: "iso27001:A.5.\
+15", strength: "partial" }, { clause: "iso27001:A.5.18", strength: "partial" }, { clause: "iso27001:\
+A.8.3", strength: "partial" }, { clause: "nist80053:AC", strength: "partial" }] }, { id: "authz.path\
+.segment", claim: "A grant on one path does not cover a longer path that merely starts with the same\
+ characters, because the comparison advances a segment at a time.", mechanism: "None. The comparison\
+ is a byte prefix. The collisions someone already hit are handled by a separate exact-match table ra\
+ther than by making the comparison segment-wise.", status: "absent", note: "Recorded absent because \
+the mechanism named in the claim does not exist \u2014 not because path authorization is missing. The com\
+ment above the function records hitting this exact hazard, where one action name is a character pref\
+ix of another, and working around it with an exact-match map. That workaround covers the collisions \
+someone thought of; a segment walk would make the whole class impossible. A segment-wise implementat\
+ion exists elsewhere in the estate but is not on this path.", enforced: [{ repo: "hanzoai/iam", path: "\
+internal/authz/authz.go", symbol: "pathAuthorized" }], verified: [{ method: "read", at: [{ repo: "ha\
+nzoai/iam", path: "internal/authz/authz.go", symbol: "pathAuthorized" }], detail: "The function body\
+ is a byte prefix test, and the comment above it documents the workaround." }], maps: [{ clause: "so\
+c2:CC6.1", strength: "partial" }, { clause: "soc2:CC6.3", strength: "partial" }, { clause: "iso27001\
+:A.5.15", strength: "partial" }, { clause: "iso27001:A.8.3", strength: "partial" }, { clause: "nist8\
+0053:AC", strength: "partial" }] }, { id: "edge.identity.headers", claim: "Headers naming an organiz\
+ation, a user, an email or a role are stripped at the edge before a handler reads one, and identity \
+is written back only from a verified token.", mechanism: "The request middleware deletes every autho\
+rity header and every sub-scope header by name, then re-mints them from validated claims. A second l\
+ayer deletes any header in two reserved families by prefix, so a new name cannot arrive unhandled.",
+  status: "automated", enforced: [{ repo: "hanzoai/cloud", path: "middleware_identity.go", symbol: "\
+authorityHeaders" }, { repo: "hanzoai/base", path: "tools/claims/claims.go", symbol: "StripIdentityH\
+eaders" }], verified: [{ method: "read", at: [{ repo: "hanzoai/cloud", path: "middleware_identity.go",
+  symbol: "authorityHeaders" }, { repo: "hanzoai/base", path: "tools/claims/claims.go", symbol: "Str\
+ipIdentityHeaders" }], detail: "The deletes run before anything reads a header, and the re-mint draw\
+s only from validated claims. The organization a caller asks to act in is honoured only where the si\
+gned membership already admits it; asking for one they are not in falls back to their own." }], maps: [
+  { clause: "soc2:CC6.1", strength: "full" }, { clause: "soc2:CC6.6", strength: "full" }, { clause: "\
+iso27001:A.8.3", strength: "full" }, { clause: "iso27001:A.8.20", strength: "full" }, { clause: "nis\
+t80053:AC", strength: "full" }, { clause: "nist80053:SC", strength: "full" }] }, { id: "base.tenant.\
+file", claim: "An organization's data is its own database file, so a query cannot reach across organ\
+izations \u2014 there is no second file open to reach into.", mechanism: "One function is the only w\
+ay a subsystem opens a per-organization database, and it builds the path from the organization slug.\
+ A subsystem cannot name a file outside its tenant because it never builds the path itself.", status: "\
+automated", enforced: [{ repo: "hanzoai/cloud", path: "orgdb.go", symbol: "OpenOrgDB" }], verified: [
+  { method: "read", at: [{ repo: "hanzoai/cloud", path: "orgdb.go", symbol: "OpenOrgDB" }], detail: "\
+The path is composed from the organization slug and the subsystem name; every caller goes through th\
+e one opener." }], maps: [{ clause: "soc2:CC6.1", strength: "full" }, { clause: "soc2:C1.1", strength: "\
+full" }, { clause: "iso27001:A.8.3", strength: "full" }, { clause: "iso27001:A.8.12", strength: "ful\
+l" }, { clause: "nist80053:AC", strength: "full" }, { clause: "nist80053:SC", strength: "full" }] },
+  { id: "base.tenant.key", claim: "Each database is opened under a key derived for that organization\
+ alone from one master, so a leaked key is worth one tenant instead of the estate.", mechanism: "A k\
+ey is derived from one master through a standard derivation function, bound to the namespace that ow\
+ns it. The derivation is a pure function of its inputs, so a file reopens after a restart with nothi\
+ng kept beside it, and a master of the wrong length is an error rather than a quiet fall back to no \
+key.", status: "partial", note: "Two different derivations answer to this claim and only one is per-\
+organization. The data plane derives per organization and per user, as the claim describes. The clou\
+d file layer derives per FILE, from a random file id \u2014 so two files of the SAME organization have un\
+related keys, and the key is not a function of the organization. Per-file derivation is not weaker a\
+gainst a stolen file, it is stronger; it just does not support a sentence that says the key belongs \
+to the organization.", enforced: [{ repo: "hanzoai/base", path: "plugins/org/org_db.go", symbol: "or\
+gDEK" }, { repo: "hanzoai/cloud", path: "cek/cek.go", symbol: "Derive" }], verified: [{ method: "rea\
+d", at: [{ repo: "hanzoai/base", path: "plugins/org/org_db.go", symbol: "orgDEK" }, { repo: "hanzoai\
+/cloud", path: "cek/cek.go", symbol: "Derive" }], detail: "Both derivations were read side by side. \
+They use the same primitive and bind different things into it." }], maps: [{ clause: "soc2:CC6.1", strength: "\
+partial" }, { clause: "soc2:C1.1", strength: "partial" }, { clause: "iso27001:A.8.24", strength: "pa\
+rtial" }, { clause: "iso27001:A.8.12", strength: "partial" }, { clause: "nist80053:SC", strength: "p\
+artial" }] }, { id: "audit.request", claim: "One row records who acted, from where, the method and p\
+ath, the action, the status the server returned, and the time.", mechanism: "Request middleware writ\
+es one record per request from the validated principal and the response, into a table with a monoton\
+ic sequence. Credential-shaped path segments and the user agent are scrubbed before the row is writt\
+en.", status: "automated", enforced: [{ repo: "hanzoai/cloud", path: "audit_middleware.go", symbol: "\
+Audit" }, { repo: "hanzoai/cloud", path: "audit/store.go", symbol: "Append" }, { repo: "hanzoai/clou\
+d", path: "audit/record.go" }], verified: [{ method: "read", at: [{ repo: "hanzoai/cloud", path: "au\
+dit_middleware.go", symbol: "Audit" }, { repo: "hanzoai/cloud", path: "audit/store.go", symbol: "App\
+end" }, { repo: "hanzoai/cloud", path: "audit/record.go" }], detail: "There are TWO trails and they \
+are not the same shape. This one is per request. The identity service keeps a second record type car\
+rying organization, user, address, method, request path, action, payload, response and status \u2014 but \
+it is written for accountable actions rather than for every request, and its address field is delibe\
+rately left empty because behind the ingress the peer address is the ingress pod, which identifies n\
+othing while still being personal data." }], maps: [{ clause: "soc2:CC7.2", strength: "full" }, { clause: "\
+soc2:CC4.1", strength: "full" }, { clause: "iso27001:A.8.15", strength: "full" }, { clause: "iso2700\
+1:A.8.16", strength: "full" }, { clause: "nist80053:AU", strength: "full" }] }, { id: "audit.redacti\
+on", claim: "What the trail records is scrubbed of secrets before it is written.", mechanism: "Paylo\
+ads emitted with a record are walked recursively against a denylist and matching values are replaced\
+ with a marker. The request path is scrubbed of credential-shaped segments and the user agent is scr\
+ubbed, before the row is written.", status: "partial", note: "A Hanzo page describes this as the req\
+uest body recorded with passwords masked. No request body is captured anywhere on this path: the mid\
+dleware builds a row from method, path, status and principal only, and the identity service's two wr\
+iters set the payload field explicitly. Redaction is real; the body capture it is described as prote\
+cting does not happen. Nothing is leaking \u2014 the sentence is wrong, and that is the defect this entry\
+ records.", enforced: [{ repo: "hanzoai/cloud", path: "audit/redact.go", symbol: "Redact" }, { repo: "\
+hanzoai/cloud", path: "audit_middleware.go", symbol: "scrubPath" }], verified: [{ method: "read", at: [
+  { repo: "hanzoai/cloud", path: "audit/redact.go", symbol: "Redact" }, { repo: "hanzoai/cloud", path: "\
+audit_middleware.go", symbol: "scrubPath" }], detail: "The denylist covers password, secret, token, \
+client secret and private key among others, and the walk is recursive. The middleware never reads a \
+request body, so there is no captured body to mask." }], maps: [{ clause: "soc2:CC6.1", strength: "p\
+artial" }, { clause: "iso27001:A.8.11", strength: "partial" }, { clause: "iso27001:A.8.12", strength: "\
+partial" }, { clause: "nist80053:AU", strength: "partial" }, { clause: "nist80053:SC", strength: "pa\
+rtial" }] }, { id: "audit.reserved", claim: "Rows recording the platform's accountable actions are r\
+eserved: the API refuses to create, correct or delete one, so evidence cannot be forged with an inve\
+nted grant or quietly trimmed of a real one.", mechanism: "One predicate names the reserved actions,\
+ and the audit surface calls it on every write verb \u2014 on create, on delete, and on update twice, for\
+ the stored row's action and for the incoming one, so a row cannot be forged by relabelling one you \
+own.", status: "automated", enforced: [{ repo: "hanzoai/iam", path: "pkg/schema/audit_log.go", symbol: "\
+PlatformWritten" }, { repo: "hanzoai/iam", path: "internal/auditlogs/auditlogs.go", symbol: "refuseP\
+latformAction" }, { repo: "hanzoai/cloud", path: "apps/admin/audit/audit.go", symbol: "Route" }, { repo: "\
+hanzoai/iam", path: "internal/auditlogs/reserved_test.go" }], verified: [{ method: "read", at: [{ repo: "\
+hanzoai/iam", path: "pkg/schema/audit_log.go", symbol: "PlatformWritten" }, { repo: "hanzoai/iam", path: "\
+internal/auditlogs/auditlogs.go", symbol: "refusePlatformAction" }, { repo: "hanzoai/cloud", path: "\
+apps/admin/audit/audit.go", symbol: "Route" }, { repo: "hanzoai/iam", path: "internal/auditlogs/rese\
+rved_test.go" }], detail: "A test at internal/auditlogs/reserved_test.go asserts this. The test seed\
+s a reserved row the way the platform writes one, then attempts to create, update, relabel and delet\
+e it through the API, and asserts all four are refused. Remove the gate and the test goes red. The c\
+loud trail is stronger still: it publishes no write route at all, only a list and a chain check. Row\
+s under consent-training, issue-user-token, mint-user-keys, revoke-user-keys, token-exchange evidenc\
+e this. The five reserved actions. A row carrying one of these is evidence precisely because the sub\
+ject of the evidence cannot write it." }, { method: "audit", actions: ["consent-training", "issue-us\
+er-token", "mint-user-keys", "revoke-user-keys", "token-exchange"] }], maps: [{ clause: "soc2:CC7.2",
+  strength: "full" }, { clause: "soc2:CC4.1", strength: "full" }, { clause: "iso27001:A.5.28", strength: "\
+full" }, { clause: "iso27001:A.8.15", strength: "full" }, { clause: "nist80053:AU", strength: "full" }] },
+  { id: "audit.index", claim: "Organization, user, action and time each carry an index, so a reviewe\
+r's question is a lookup rather than a walk through the whole trail.", mechanism: "The cloud audit t\
+able declares real indexes on organization with sequence, action with sequence, result with sequence\
+, and timestamp.", status: "partial", note: "Partial on two counts, both measured rather than reason\
+ed. First, the cloud trail indexes organization, action and time but NOT user \u2014 so of the four quest\
+ions named, 'everything one person did' is the one that still walks the table. Second, the identity \
+service's record declares index tags on organization, user, action and time and they are INERT: the \
+tag parser reads only two directives and index is not one of them, and that backend stores every ent\
+ity as a JSON payload in a single shared table with indexes on kind, parent and deleted alone. The d\
+eclaration exists; on this backend it materializes nothing.", enforced: [{ repo: "hanzoai/cloud", path: "\
+audit/store.go", symbol: "schema" }, { repo: "hanzoai/orm", path: "model.go", symbol: "parseStructTa\
+gs" }], verified: [{ method: "read", at: [{ repo: "hanzoai/cloud", path: "audit/store.go", symbol: "\
+schema" }, { repo: "hanzoai/orm", path: "model.go", symbol: "parseStructTags" }], detail: "The index\
+ statements in the cloud store were read directly. The inert-tag finding was measured, not inferred:\
+ an entity was written through the record layer to a real database file and the resulting schema rea\
+d back, which showed one shared table with a JSON payload column and three indexes, none of them on \
+the declared fields." }], maps: [{ clause: "soc2:CC7.2", strength: "partial" }, { clause: "iso27001:\
+A.8.15", strength: "partial" }, { clause: "iso27001:A.8.16", strength: "partial" }, { clause: "nist8\
+0053:AU", strength: "partial" }] }, { id: "audit.chain", claim: "Each record carries the previous re\
+cord's hash and its own, so a row removed or altered after the fact is detectable rather than silent\
+.", mechanism: "Records are appended over a monotonic sequence, each carrying the prior hash, and an\
+ endpoint walks the chain and reports where it breaks. The store issues no update and no delete.", status: "\
+automated", enforced: [{ repo: "hanzoai/cloud", path: "audit/record.go", symbol: "Hash" }, { repo: "\
+hanzoai/cloud", path: "apps/admin/audit/audit.go", symbol: "Verify" }, { repo: "hanzoai/cloud", path: "\
+audit/store.go" }], verified: [{ method: "read", at: [{ repo: "hanzoai/cloud", path: "audit/record.g\
+o", symbol: "Hash" }, { repo: "hanzoai/cloud", path: "apps/admin/audit/audit.go", symbol: "Verify" },
+  { repo: "hanzoai/cloud", path: "audit/store.go" }], detail: "Every record carries a previous hash \
+and its own, the sequence is the primary key, and the store package issues no update and no delete s\
+tatement anywhere." }], maps: [{ clause: "soc2:CC7.2", strength: "full" }, { clause: "soc2:PI1.5", strength: "\
+full" }, { clause: "iso27001:A.5.28", strength: "full" }, { clause: "iso27001:A.8.15", strength: "fu\
+ll" }, { clause: "nist80053:AU", strength: "full" }, { clause: "nist80053:SI", strength: "full" }] },
+  { id: "privacy.consent", claim: "A member's training-consent answer is recorded in the trail as a \
+row the organization cannot author, alter or remove.", mechanism: "The consent endpoint writes a row\
+ carrying the before and after state under a reserved action, inside the same transaction as the cha\
+nge itself, so the record and the change land together or not at all.", status: "automated", enforced: [
+  { repo: "hanzoai/iam", path: "internal/oidc/consent.go", symbol: "auditConsent" }, { repo: "hanzoa\
+i/iam", path: "pkg/schema/audit_log.go", symbol: "ActionConsentTraining" }], verified: [{ method: "r\
+ead", at: [{ repo: "hanzoai/iam", path: "internal/oidc/consent.go", symbol: "auditConsent" }, { repo: "\
+hanzoai/iam", path: "pkg/schema/audit_log.go", symbol: "ActionConsentTraining" }], detail: "Rows und\
+er consent-training evidence this. One row per transition, carrying the from and to state. The actio\
+n is reserved, which is what makes the row evidence rather than an assertion." }, { method: "audit",
+  actions: ["consent-training"] }], maps: [{ clause: "soc2:P2.1", strength: "full" }, { clause: "soc\
+2:P6.2", strength: "full" }, { clause: "iso27001:A.5.34", strength: "full" }, { clause: "nist80053:P\
+T", strength: "full" }, { clause: "nist80053:AU", strength: "full" }] }, { id: "kms.signing.handle",
+  claim: "The signing interface takes a key id and some bytes and returns a signature. The private k\
+ey is made inside an external module and stays there, so there is no moment when it exists in our pr\
+ocess to be logged, leaked or written into a crash dump.", mechanism: "None found. Signing keys are \
+held as strings on the identity service's own records and parsed in the running binary to build a si\
+gner. The cloud key service is embedded in the binary, with a master key read from the environment.",
+  status: "absent", note: "Recorded absent after searching the four repositories that serve this pla\
+tform for any external key-service client. There is none, and the key service exposes no signing fun\
+ction at all. Private keys are held and used in-process today. Threshold signing is wired but fails \
+closed unless a backend is configured, so it is not a path in service. A Hanzo page states this cont\
+rol in the present tense and names four external modules; on the evidence available it is a roadmap \
+item. This is the most consequential gap in this inventory.", enforced: [{ repo: "hanzoai/iam", path: "\
+pkg/schema/cert.go", symbol: "PrivateKey" }, { repo: "hanzoai/cloud", path: "clients/kms/kms.go", symbol: "\
+New" }, { repo: "hanzoai/iam", path: "internal/oidc/jwt.go" }], verified: [{ method: "read", at: [{ repo: "\
+hanzoai/iam", path: "pkg/schema/cert.go", symbol: "PrivateKey" }, { repo: "hanzoai/cloud", path: "cl\
+ients/kms/kms.go", symbol: "New" }, { repo: "hanzoai/iam", path: "internal/oidc/jwt.go" }], detail: "\
+The private key is a string field on a record, and the signer is built by parsing it in the running \
+binary. The one hardware-module mention in the tree is a note explaining why a dependency was NOT ta\
+ken." }], maps: [{ clause: "soc2:CC6.1", strength: "partial" }, { clause: "soc2:CC6.7", strength: "p\
+artial" }, { clause: "iso27001:A.8.24", strength: "partial" }, { clause: "nist80053:SC", strength: "\
+partial" }] }, { id: "crypto.validation", claim: "The cryptographic modules this platform runs hold \
+an independent validation.", mechanism: "None. The code implements published standards, the lattice-\
+based key-encapsulation and signature schemes among them. Implementing a standard is not the same as\
+ holding a validation, and a validation belongs to the vendor of a module rather than to the softwar\
+e that calls it.", status: "absent", note: "Carried so the gap is counted rather than omitted. There\
+ is nothing to read here \u2014 no certificate exists to point at \u2014 so this entry rests on a reading of w\
+hat is absent rather than on anything that could fail. Where a deployment needs validated modules, t\
+hat is a question about which module signs, and it is answered by kms.signing.handle, which is itsel\
+f absent.", enforced: [{ repo: "hanzoai/iam", path: "internal/oidc/mldsa.go", symbol: "init" }], verified: [
+  { method: "read", at: [{ repo: "hanzoai/iam", path: "internal/oidc/mldsa.go", symbol: "init" }], detail: "\
+The signature scheme is implemented in software inside our own binary. No external validated module \
+is reached." }], maps: [{ clause: "iso27001:A.8.24", strength: "partial" }, { clause: "nist80053:SC",
+  strength: "partial" }] }];
 
   // <define:__FRAMEWORKS__>
-  var define_FRAMEWORKS_default = { $comment: "Framework clause catalogs. Reference data: the published clause lists, verbatim in id and title, with no Hanzo judgement in them. They are the DENOMINATOR of every coverage number \u2014 a control in controls.json may only map to an id that appears here, which is what makes a typo a build failure instead of a silently uncounted clause. Nothing here asserts that Hanzo holds a certification, and no field in this file can express one.", soc2: { name: "SOC 2 Trust Services Criteria", edition: "2017, with the 2022 revised points of focus", publisher: "AICPA", unit: "criterion", units: "criteria", note: "All five trust services categories. Security (the common criteria) applies to every engagement; the other four are included only when in scope for a given report.", clauses: [{ id: "CC1.1", group: "Control Environment", title: "Demonstrates a commitment to integrity and ethical values" }, { id: "CC1.2", group: "Control Environment", title: "Board of directors demonstrates independence and exercises oversight" }, { id: "CC1.3", group: "Control Environment", title: "Establishes structures, reporting lines, authorities and responsibilities" }, { id: "CC1.4", group: "Control Environment", title: "Demonstrates a commitment to attract, develop and retain competent individuals" }, { id: "CC1.5", group: "Control Environment", title: "Holds individuals accountable for their internal control responsibilities" }, { id: "CC2.1", group: "Communication and Information", title: "Obtains or generates relevant, quality information to support internal control" }, { id: "CC2.2", group: "Communication and Information", title: "Internally communicates information necessary to support internal control" }, { id: "CC2.3", group: "Communication and Information", title: "Communicates with external parties regarding matters affecting internal control" }, { id: "CC3.1", group: "Risk Assessment", title: "Specifies objectives with sufficient clarity to identify and assess risk" }, { id: "CC3.2", group: "Risk Assessment", title: "Identifies and analyzes risk to the achievement of its objectives" }, { id: "CC3.3", group: "Risk Assessment", title: "Considers the potential for fraud in assessing risk" }, { id: "CC3.4", group: "Risk Assessment", title: "Identifies and assesses changes that could significantly impact internal control" }, { id: "CC4.1", group: "Monitoring Activities", title: "Selects, develops and performs ongoing and separate evaluations of controls" }, { id: "CC4.2", group: "Monitoring Activities", title: "Evaluates and communicates internal control deficiencies in a timely manner" }, { id: "CC5.1", group: "Control Activities", title: "Selects and develops control activities that mitigate risk to acceptable levels" }, { id: "CC5.2", group: "Control Activities", title: "Selects and develops general control activities over technology" }, { id: "CC5.3", group: "Control Activities", title: "Deploys control activities through policies and procedures" }, { id: "CC6.1", group: "Logical and Physical Access", title: "Implements logical access security software, infrastructure and architectures over protected information assets" }, { id: "CC6.2", group: "Logical and Physical Access", title: "Registers and authorizes new internal and external users before issuing credentials" }, { id: "CC6.3", group: "Logical and Physical Access", title: "Authorizes, modifies or removes access based on roles, responsibilities and least privilege" }, { id: "CC6.4", group: "Logical and Physical Access", title: "Restricts physical access to facilities and protected information assets" }, { id: "CC6.5", group: "Logical and Physical Access", title: "Discontinues logical and physical protections over assets on disposal" }, { id: "CC6.6", group: "Logical and Physical Access", title: "Implements logical access security measures against threats from outside the system boundaries" }, { id: "CC6.7", group: "Logical and Physical Access", title: "Restricts the transmission, movement and removal of information" }, { id: "CC6.8", group: "Logical and Physical Access", title: "Implements controls to prevent or detect and act upon unauthorized or malicious software" }, { id: "CC7.1", group: "System Operations", title: "Uses detection and monitoring procedures to identify configuration changes and vulnerabilities" }, { id: "CC7.2", group: "System Operations", title: "Monitors system components for anomalies indicative of malicious acts, natural disasters and errors" }, { id: "CC7.3", group: "System Operations", title: "Evaluates security events to determine whether they could or have resulted in a failure" }, { id: "CC7.4", group: "System Operations", title: "Responds to identified security incidents" }, { id: "CC7.5", group: "System Operations", title: "Identifies, develops and implements activities to recover from identified security incidents" }, { id: "CC8.1", group: "Change Management", title: "Authorizes, designs, develops, tests, approves and implements changes to infrastructure, data, software and procedures" }, { id: "CC9.1", group: "Risk Mitigation", title: "Identifies, selects and develops risk mitigation activities for business disruptions" }, { id: "CC9.2", group: "Risk Mitigation", title: "Assesses and manages risks associated with vendors and business partners" }, { id: "A1.1", group: "Availability", title: "Maintains, monitors and evaluates current processing capacity and use of system components" }, { id: "A1.2", group: "Availability", title: "Authorizes, designs, implements and maintains environmental protections, backup and recovery infrastructure" }, { id: "A1.3", group: "Availability", title: "Tests recovery plan procedures supporting system recovery" }, { id: "C1.1", group: "Confidentiality", title: "Identifies and maintains confidential information to meet confidentiality objectives" }, { id: "C1.2", group: "Confidentiality", title: "Disposes of confidential information to meet confidentiality objectives" }, { id: "PI1.1", group: "Processing Integrity", title: "Obtains, generates, uses and communicates relevant quality information about processing objectives" }, { id: "PI1.2", group: "Processing Integrity", title: "Implements policies and procedures over system inputs" }, { id: "PI1.3", group: "Processing Integrity", title: "Implements policies and procedures over system processing" }, { id: "PI1.4", group: "Processing Integrity", title: "Implements policies and procedures to make output available in accordance with specifications" }, { id: "PI1.5", group: "Processing Integrity", title: "Implements policies and procedures to store inputs, items in processing and outputs completely and accurately" }, { id: "P1.1", group: "Privacy \u2014 Notice", title: "Provides notice about its privacy practices to data subjects" }, { id: "P2.1", group: "Privacy \u2014 Choice and Consent", title: "Communicates choices available regarding personal information and obtains consent" }, { id: "P3.1", group: "Privacy \u2014 Collection", title: "Collects personal information consistent with its objectives" }, { id: "P3.2", group: "Privacy \u2014 Collection", title: "Obtains explicit consent for sensitive personal information" }, { id: "P4.1", group: "Privacy \u2014 Use, Retention and Disposal", title: "Limits the use of personal information to its stated purposes" }, { id: "P4.2", group: "Privacy \u2014 Use, Retention and Disposal", title: "Retains personal information consistent with its objectives" }, { id: "P4.3", group: "Privacy \u2014 Use, Retention and Disposal", title: "Securely disposes of personal information" }, { id: "P5.1", group: "Privacy \u2014 Access", title: "Grants identified and authenticated data subjects access to their personal information" }, { id: "P5.2", group: "Privacy \u2014 Access", title: "Corrects, amends or appends personal information on request" }, { id: "P6.1", group: "Privacy \u2014 Disclosure and Notification", title: "Discloses personal information only with the consent of the data subject" }, { id: "P6.2", group: "Privacy \u2014 Disclosure and Notification", title: "Creates and retains a record of authorized disclosures" }, { id: "P6.3", group: "Privacy \u2014 Disclosure and Notification", title: "Creates and retains a record of detected or reported unauthorized disclosures" }, { id: "P6.4", group: "Privacy \u2014 Disclosure and Notification", title: "Obtains privacy commitments from third parties to whom information is disclosed" }, { id: "P6.5", group: "Privacy \u2014 Disclosure and Notification", title: "Obtains commitments from third parties to notify of unauthorized disclosures" }, { id: "P6.6", group: "Privacy \u2014 Disclosure and Notification", title: "Provides notification of breaches and incidents to affected data subjects, regulators and others" }, { id: "P6.7", group: "Privacy \u2014 Disclosure and Notification", title: "Provides data subjects with an accounting of personal information held and disclosures made" }, { id: "P7.1", group: "Privacy \u2014 Quality", title: "Collects and maintains accurate, complete and relevant personal information" }, { id: "P8.1", group: "Privacy \u2014 Monitoring and Enforcement", title: "Implements a process for receiving, addressing and resolving privacy complaints" }] }, iso27001: { name: "ISO/IEC 27001 Annex A", edition: "2022", publisher: "ISO/IEC", unit: "control", units: "controls", note: "All 93 Annex A controls across the four themes. Annex A is a reference set; a real Statement of Applicability scopes it per organization. This catalog does not scope it \u2014 every control is counted, and the ones no engineering control can reach show as uncovered rather than as excluded.", clauses: [{ id: "A.5.1", group: "Organizational", title: "Policies for information security" }, { id: "A.5.2", group: "Organizational", title: "Information security roles and responsibilities" }, { id: "A.5.3", group: "Organizational", title: "Segregation of duties" }, { id: "A.5.4", group: "Organizational", title: "Management responsibilities" }, { id: "A.5.5", group: "Organizational", title: "Contact with authorities" }, { id: "A.5.6", group: "Organizational", title: "Contact with special interest groups" }, { id: "A.5.7", group: "Organizational", title: "Threat intelligence" }, { id: "A.5.8", group: "Organizational", title: "Information security in project management" }, { id: "A.5.9", group: "Organizational", title: "Inventory of information and other associated assets" }, { id: "A.5.10", group: "Organizational", title: "Acceptable use of information and other associated assets" }, { id: "A.5.11", group: "Organizational", title: "Return of assets" }, { id: "A.5.12", group: "Organizational", title: "Classification of information" }, { id: "A.5.13", group: "Organizational", title: "Labelling of information" }, { id: "A.5.14", group: "Organizational", title: "Information transfer" }, { id: "A.5.15", group: "Organizational", title: "Access control" }, { id: "A.5.16", group: "Organizational", title: "Identity management" }, { id: "A.5.17", group: "Organizational", title: "Authentication information" }, { id: "A.5.18", group: "Organizational", title: "Access rights" }, { id: "A.5.19", group: "Organizational", title: "Information security in supplier relationships" }, { id: "A.5.20", group: "Organizational", title: "Addressing information security within supplier agreements" }, { id: "A.5.21", group: "Organizational", title: "Managing information security in the ICT supply chain" }, { id: "A.5.22", group: "Organizational", title: "Monitoring, review and change management of supplier services" }, { id: "A.5.23", group: "Organizational", title: "Information security for use of cloud services" }, { id: "A.5.24", group: "Organizational", title: "Information security incident management planning and preparation" }, { id: "A.5.25", group: "Organizational", title: "Assessment and decision on information security events" }, { id: "A.5.26", group: "Organizational", title: "Response to information security incidents" }, { id: "A.5.27", group: "Organizational", title: "Learning from information security incidents" }, { id: "A.5.28", group: "Organizational", title: "Collection of evidence" }, { id: "A.5.29", group: "Organizational", title: "Information security during disruption" }, { id: "A.5.30", group: "Organizational", title: "ICT readiness for business continuity" }, { id: "A.5.31", group: "Organizational", title: "Legal, statutory, regulatory and contractual requirements" }, { id: "A.5.32", group: "Organizational", title: "Intellectual property rights" }, { id: "A.5.33", group: "Organizational", title: "Protection of records" }, { id: "A.5.34", group: "Organizational", title: "Privacy and protection of personally identifiable information" }, { id: "A.5.35", group: "Organizational", title: "Independent review of information security" }, { id: "A.5.36", group: "Organizational", title: "Compliance with policies, rules and standards for information security" }, { id: "A.5.37", group: "Organizational", title: "Documented operating procedures" }, { id: "A.6.1", group: "People", title: "Screening" }, { id: "A.6.2", group: "People", title: "Terms and conditions of employment" }, { id: "A.6.3", group: "People", title: "Information security awareness, education and training" }, { id: "A.6.4", group: "People", title: "Disciplinary process" }, { id: "A.6.5", group: "People", title: "Responsibilities after termination or change of employment" }, { id: "A.6.6", group: "People", title: "Confidentiality or non-disclosure agreements" }, { id: "A.6.7", group: "People", title: "Remote working" }, { id: "A.6.8", group: "People", title: "Information security event reporting" }, { id: "A.7.1", group: "Physical", title: "Physical security perimeters" }, { id: "A.7.2", group: "Physical", title: "Physical entry" }, { id: "A.7.3", group: "Physical", title: "Securing offices, rooms and facilities" }, { id: "A.7.4", group: "Physical", title: "Physical security monitoring" }, { id: "A.7.5", group: "Physical", title: "Protecting against physical and environmental threats" }, { id: "A.7.6", group: "Physical", title: "Working in secure areas" }, { id: "A.7.7", group: "Physical", title: "Clear desk and clear screen" }, { id: "A.7.8", group: "Physical", title: "Equipment siting and protection" }, { id: "A.7.9", group: "Physical", title: "Security of assets off-premises" }, { id: "A.7.10", group: "Physical", title: "Storage media" }, { id: "A.7.11", group: "Physical", title: "Supporting utilities" }, { id: "A.7.12", group: "Physical", title: "Cabling security" }, { id: "A.7.13", group: "Physical", title: "Equipment maintenance" }, { id: "A.7.14", group: "Physical", title: "Secure disposal or re-use of equipment" }, { id: "A.8.1", group: "Technological", title: "User endpoint devices" }, { id: "A.8.2", group: "Technological", title: "Privileged access rights" }, { id: "A.8.3", group: "Technological", title: "Information access restriction" }, { id: "A.8.4", group: "Technological", title: "Access to source code" }, { id: "A.8.5", group: "Technological", title: "Secure authentication" }, { id: "A.8.6", group: "Technological", title: "Capacity management" }, { id: "A.8.7", group: "Technological", title: "Protection against malware" }, { id: "A.8.8", group: "Technological", title: "Management of technical vulnerabilities" }, { id: "A.8.9", group: "Technological", title: "Configuration management" }, { id: "A.8.10", group: "Technological", title: "Information deletion" }, { id: "A.8.11", group: "Technological", title: "Data masking" }, { id: "A.8.12", group: "Technological", title: "Data leakage prevention" }, { id: "A.8.13", group: "Technological", title: "Information backup" }, { id: "A.8.14", group: "Technological", title: "Redundancy of information processing facilities" }, { id: "A.8.15", group: "Technological", title: "Logging" }, { id: "A.8.16", group: "Technological", title: "Monitoring activities" }, { id: "A.8.17", group: "Technological", title: "Clock synchronization" }, { id: "A.8.18", group: "Technological", title: "Use of privileged utility programs" }, { id: "A.8.19", group: "Technological", title: "Installation of software on operational systems" }, { id: "A.8.20", group: "Technological", title: "Networks security" }, { id: "A.8.21", group: "Technological", title: "Security of network services" }, { id: "A.8.22", group: "Technological", title: "Segregation of networks" }, { id: "A.8.23", group: "Technological", title: "Web filtering" }, { id: "A.8.24", group: "Technological", title: "Use of cryptography" }, { id: "A.8.25", group: "Technological", title: "Secure development life cycle" }, { id: "A.8.26", group: "Technological", title: "Application security requirements" }, { id: "A.8.27", group: "Technological", title: "Secure system architecture and engineering principles" }, { id: "A.8.28", group: "Technological", title: "Secure coding" }, { id: "A.8.29", group: "Technological", title: "Security testing in development and acceptance" }, { id: "A.8.30", group: "Technological", title: "Outsourced development" }, { id: "A.8.31", group: "Technological", title: "Separation of development, test and production environments" }, { id: "A.8.32", group: "Technological", title: "Change management" }, { id: "A.8.33", group: "Technological", title: "Test information" }, { id: "A.8.34", group: "Technological", title: "Protection of information systems during audit testing" }] }, nist80053: { name: "NIST SP 800-53 control families", edition: "Revision 5", publisher: "NIST", unit: "family", units: "families", note: "Mapped at FAMILY granularity, not to individual controls. Rev 5 has over a thousand controls and enhancements; claiming a per-control mapping we have not performed would be the exact dishonesty this system exists to prevent. A family counts as automated when at least one verified automated control lands inside it \u2014 that is a weaker statement than covering the family, and it is stated that way everywhere it is reported.", clauses: [{ id: "AC", group: "800-53 Rev 5", title: "Access Control" }, { id: "AT", group: "800-53 Rev 5", title: "Awareness and Training" }, { id: "AU", group: "800-53 Rev 5", title: "Audit and Accountability" }, { id: "CA", group: "800-53 Rev 5", title: "Assessment, Authorization and Monitoring" }, { id: "CM", group: "800-53 Rev 5", title: "Configuration Management" }, { id: "CP", group: "800-53 Rev 5", title: "Contingency Planning" }, { id: "IA", group: "800-53 Rev 5", title: "Identification and Authentication" }, { id: "IR", group: "800-53 Rev 5", title: "Incident Response" }, { id: "MA", group: "800-53 Rev 5", title: "Maintenance" }, { id: "MP", group: "800-53 Rev 5", title: "Media Protection" }, { id: "PE", group: "800-53 Rev 5", title: "Physical and Environmental Protection" }, { id: "PL", group: "800-53 Rev 5", title: "Planning" }, { id: "PM", group: "800-53 Rev 5", title: "Program Management" }, { id: "PS", group: "800-53 Rev 5", title: "Personnel Security" }, { id: "PT", group: "800-53 Rev 5", title: "Personally Identifiable Information Processing and Transparency" }, { id: "RA", group: "800-53 Rev 5", title: "Risk Assessment" }, { id: "SA", group: "800-53 Rev 5", title: "System and Services Acquisition" }, { id: "SC", group: "800-53 Rev 5", title: "System and Communications Protection" }, { id: "SI", group: "800-53 Rev 5", title: "System and Information Integrity" }, { id: "SR", group: "800-53 Rev 5", title: "Supply Chain Risk Management" }] } };
+  var define_FRAMEWORKS_default = { $comment: "Framework clause catalogs. Reference data: the publis\
+hed clause lists, verbatim in id and title, with no Hanzo judgement in them. They are the DENOMINATO\
+R of every coverage number \u2014 a control in controls.json may only map to an id that appears here, whi\
+ch is what makes a typo a build failure instead of a silently uncounted clause. Every field here des\
+cribes a published clause, so coverage against that list is the only thing this file can say.", soc2: {
+  name: "SOC 2 Trust Services Criteria", edition: "2017, with the 2022 revised points of focus", publisher: "\
+AICPA", unit: "criterion", units: "criteria", note: "All five trust services categories. Security (t\
+he common criteria) applies to every engagement; the other four are included only when in scope for \
+a given report.", clauses: [{ id: "CC1.1", group: "Control Environment", title: "Demonstrates a comm\
+itment to integrity and ethical values" }, { id: "CC1.2", group: "Control Environment", title: "Boar\
+d of directors demonstrates independence and exercises oversight" }, { id: "CC1.3", group: "Control \
+Environment", title: "Establishes structures, reporting lines, authorities and responsibilities" }, {
+  id: "CC1.4", group: "Control Environment", title: "Demonstrates a commitment to attract, develop a\
+nd retain competent individuals" }, { id: "CC1.5", group: "Control Environment", title: "Holds indiv\
+iduals accountable for their internal control responsibilities" }, { id: "CC2.1", group: "Communicat\
+ion and Information", title: "Obtains or generates relevant, quality information to support internal\
+ control" }, { id: "CC2.2", group: "Communication and Information", title: "Internally communicates \
+information necessary to support internal control" }, { id: "CC2.3", group: "Communication and Infor\
+mation", title: "Communicates with external parties regarding matters affecting internal control" },
+  { id: "CC3.1", group: "Risk Assessment", title: "Specifies objectives with sufficient clarity to i\
+dentify and assess risk" }, { id: "CC3.2", group: "Risk Assessment", title: "Identifies and analyzes\
+ risk to the achievement of its objectives" }, { id: "CC3.3", group: "Risk Assessment", title: "Cons\
+iders the potential for fraud in assessing risk" }, { id: "CC3.4", group: "Risk Assessment", title: "\
+Identifies and assesses changes that could significantly impact internal control" }, { id: "CC4.1", group: "\
+Monitoring Activities", title: "Selects, develops and performs ongoing and separate evaluations of c\
+ontrols" }, { id: "CC4.2", group: "Monitoring Activities", title: "Evaluates and communicates intern\
+al control deficiencies in a timely manner" }, { id: "CC5.1", group: "Control Activities", title: "S\
+elects and develops control activities that mitigate risk to acceptable levels" }, { id: "CC5.2", group: "\
+Control Activities", title: "Selects and develops general control activities over technology" }, { id: "\
+CC5.3", group: "Control Activities", title: "Deploys control activities through policies and procedu\
+res" }, { id: "CC6.1", group: "Logical and Physical Access", title: "Implements logical access secur\
+ity software, infrastructure and architectures over protected information assets" }, { id: "CC6.2", group: "\
+Logical and Physical Access", title: "Registers and authorizes new internal and external users befor\
+e issuing credentials" }, { id: "CC6.3", group: "Logical and Physical Access", title: "Authorizes, m\
+odifies or removes access based on roles, responsibilities and least privilege" }, { id: "CC6.4", group: "\
+Logical and Physical Access", title: "Restricts physical access to facilities and protected informat\
+ion assets" }, { id: "CC6.5", group: "Logical and Physical Access", title: "Discontinues logical and\
+ physical protections over assets on disposal" }, { id: "CC6.6", group: "Logical and Physical Access",
+  title: "Implements logical access security measures against threats from outside the system bounda\
+ries" }, { id: "CC6.7", group: "Logical and Physical Access", title: "Restricts the transmission, mo\
+vement and removal of information" }, { id: "CC6.8", group: "Logical and Physical Access", title: "I\
+mplements controls to prevent or detect and act upon unauthorized or malicious software" }, { id: "C\
+C7.1", group: "System Operations", title: "Uses detection and monitoring procedures to identify conf\
+iguration changes and vulnerabilities" }, { id: "CC7.2", group: "System Operations", title: "Monitor\
+s system components for anomalies indicative of malicious acts, natural disasters and errors" }, { id: "\
+CC7.3", group: "System Operations", title: "Evaluates security events to determine whether they coul\
+d or have resulted in a failure" }, { id: "CC7.4", group: "System Operations", title: "Responds to i\
+dentified security incidents" }, { id: "CC7.5", group: "System Operations", title: "Identifies, deve\
+lops and implements activities to recover from identified security incidents" }, { id: "CC8.1", group: "\
+Change Management", title: "Authorizes, designs, develops, tests, approves and implements changes to\
+ infrastructure, data, software and procedures" }, { id: "CC9.1", group: "Risk Mitigation", title: "\
+Identifies, selects and develops risk mitigation activities for business disruptions" }, { id: "CC9.\
+2", group: "Risk Mitigation", title: "Assesses and manages risks associated with vendors and busines\
+s partners" }, { id: "A1.1", group: "Availability", title: "Maintains, monitors and evaluates curren\
+t processing capacity and use of system components" }, { id: "A1.2", group: "Availability", title: "\
+Authorizes, designs, implements and maintains environmental protections, backup and recovery infrast\
+ructure" }, { id: "A1.3", group: "Availability", title: "Tests recovery plan procedures supporting s\
+ystem recovery" }, { id: "C1.1", group: "Confidentiality", title: "Identifies and maintains confiden\
+tial information to meet confidentiality objectives" }, { id: "C1.2", group: "Confidentiality", title: "\
+Disposes of confidential information to meet confidentiality objectives" }, { id: "PI1.1", group: "P\
+rocessing Integrity", title: "Obtains, generates, uses and communicates relevant quality information\
+ about processing objectives" }, { id: "PI1.2", group: "Processing Integrity", title: "Implements po\
+licies and procedures over system inputs" }, { id: "PI1.3", group: "Processing Integrity", title: "I\
+mplements policies and procedures over system processing" }, { id: "PI1.4", group: "Processing Integ\
+rity", title: "Implements policies and procedures to make output available in accordance with specif\
+ications" }, { id: "PI1.5", group: "Processing Integrity", title: "Implements policies and procedure\
+s to store inputs, items in processing and outputs completely and accurately" }, { id: "P1.1", group: "\
+Privacy \u2014 Notice", title: "Provides notice about its privacy practices to data subjects" }, { id: "\
+P2.1", group: "Privacy \u2014 Choice and Consent", title: "Communicates choices available regarding \
+personal information and obtains consent" }, { id: "P3.1", group: "Privacy \u2014 Collection", title: "\
+Collects personal information consistent with its objectives" }, { id: "P3.2", group: "Privacy \u2014 Col\
+lection", title: "Obtains explicit consent for sensitive personal information" }, { id: "P4.1", group: "\
+Privacy \u2014 Use, Retention and Disposal", title: "Limits the use of personal information to its s\
+tated purposes" }, { id: "P4.2", group: "Privacy \u2014 Use, Retention and Disposal", title: "Retain\
+s personal information consistent with its objectives" }, { id: "P4.3", group: "Privacy \u2014 Use, Reten\
+tion and Disposal", title: "Securely disposes of personal information" }, { id: "P5.1", group: "Priv\
+acy \u2014 Access", title: "Grants identified and authenticated data subjects access to their person\
+al information" }, { id: "P5.2", group: "Privacy \u2014 Access", title: "Corrects, amends or appends\
+ personal information on request" }, { id: "P6.1", group: "Privacy \u2014 Disclosure and Notification",
+  title: "Discloses personal information only with the consent of the data subject" }, { id: "P6.2",
+  group: "Privacy \u2014 Disclosure and Notification", title: "Creates and retains a record of autho\
+rized disclosures" }, { id: "P6.3", group: "Privacy \u2014 Disclosure and Notification", title: "Cre\
+ates and retains a record of detected or reported unauthorized disclosures" }, { id: "P6.4", group: "\
+Privacy \u2014 Disclosure and Notification", title: "Obtains privacy commitments from third parties \
+to whom information is disclosed" }, { id: "P6.5", group: "Privacy \u2014 Disclosure and Notification",
+  title: "Obtains commitments from third parties to notify of unauthorized disclosures" }, { id: "P6\
+.6", group: "Privacy \u2014 Disclosure and Notification", title: "Provides notification of breaches \
+and incidents to affected data subjects, regulators and others" }, { id: "P6.7", group: "Privacy \u2014 D\
+isclosure and Notification", title: "Provides data subjects with an accounting of personal informati\
+on held and disclosures made" }, { id: "P7.1", group: "Privacy \u2014 Quality", title: "Collects and\
+ maintains accurate, complete and relevant personal information" }, { id: "P8.1", group: "Privacy \u2014 \
+Monitoring and Enforcement", title: "Implements a process for receiving, addressing and resolving pr\
+ivacy complaints" }] }, iso27001: { name: "ISO/IEC 27001 Annex A", edition: "2022", publisher: "ISO/\
+IEC", unit: "control", units: "controls", note: "All 93 Annex A controls across the four themes. Ann\
+ex A is a reference set; a real Statement of Applicability scopes it per organization. This catalog \
+does not scope it \u2014 every control is counted, and the ones no engineering control can reach show as \
+uncovered rather than as excluded.", clauses: [{ id: "A.5.1", group: "Organizational", title: "Polic\
+ies for information security" }, { id: "A.5.2", group: "Organizational", title: "Information securit\
+y roles and responsibilities" }, { id: "A.5.3", group: "Organizational", title: "Segregation of duti\
+es" }, { id: "A.5.4", group: "Organizational", title: "Management responsibilities" }, { id: "A.5.5",
+  group: "Organizational", title: "Contact with authorities" }, { id: "A.5.6", group: "Organizationa\
+l", title: "Contact with special interest groups" }, { id: "A.5.7", group: "Organizational", title: "\
+Threat intelligence" }, { id: "A.5.8", group: "Organizational", title: "Information security in proj\
+ect management" }, { id: "A.5.9", group: "Organizational", title: "Inventory of information and othe\
+r associated assets" }, { id: "A.5.10", group: "Organizational", title: "Acceptable use of informati\
+on and other associated assets" }, { id: "A.5.11", group: "Organizational", title: "Return of assets" },
+  { id: "A.5.12", group: "Organizational", title: "Classification of information" }, { id: "A.5.13",
+  group: "Organizational", title: "Labelling of information" }, { id: "A.5.14", group: "Organization\
+al", title: "Information transfer" }, { id: "A.5.15", group: "Organizational", title: "Access contro\
+l" }, { id: "A.5.16", group: "Organizational", title: "Identity management" }, { id: "A.5.17", group: "\
+Organizational", title: "Authentication information" }, { id: "A.5.18", group: "Organizational", title: "\
+Access rights" }, { id: "A.5.19", group: "Organizational", title: "Information security in supplier \
+relationships" }, { id: "A.5.20", group: "Organizational", title: "Addressing information security w\
+ithin supplier agreements" }, { id: "A.5.21", group: "Organizational", title: "Managing information \
+security in the ICT supply chain" }, { id: "A.5.22", group: "Organizational", title: "Monitoring, re\
+view and change management of supplier services" }, { id: "A.5.23", group: "Organizational", title: "\
+Information security for use of cloud services" }, { id: "A.5.24", group: "Organizational", title: "\
+Information security incident management planning and preparation" }, { id: "A.5.25", group: "Organi\
+zational", title: "Assessment and decision on information security events" }, { id: "A.5.26", group: "\
+Organizational", title: "Response to information security incidents" }, { id: "A.5.27", group: "Orga\
+nizational", title: "Learning from information security incidents" }, { id: "A.5.28", group: "Organi\
+zational", title: "Collection of evidence" }, { id: "A.5.29", group: "Organizational", title: "Infor\
+mation security during disruption" }, { id: "A.5.30", group: "Organizational", title: "ICT readiness\
+ for business continuity" }, { id: "A.5.31", group: "Organizational", title: "Legal, statutory, regu\
+latory and contractual requirements" }, { id: "A.5.32", group: "Organizational", title: "Intellectua\
+l property rights" }, { id: "A.5.33", group: "Organizational", title: "Protection of records" }, { id: "\
+A.5.34", group: "Organizational", title: "Privacy and protection of personally identifiable informat\
+ion" }, { id: "A.5.35", group: "Organizational", title: "Independent review of information security" },
+  { id: "A.5.36", group: "Organizational", title: "Compliance with policies, rules and standards for\
+ information security" }, { id: "A.5.37", group: "Organizational", title: "Documented operating proc\
+edures" }, { id: "A.6.1", group: "People", title: "Screening" }, { id: "A.6.2", group: "People", title: "\
+Terms and conditions of employment" }, { id: "A.6.3", group: "People", title: "Information security \
+awareness, education and training" }, { id: "A.6.4", group: "People", title: "Disciplinary process" },
+  { id: "A.6.5", group: "People", title: "Responsibilities after termination or change of employment" },
+  { id: "A.6.6", group: "People", title: "Confidentiality or non-disclosure agreements" }, { id: "A.\
+6.7", group: "People", title: "Remote working" }, { id: "A.6.8", group: "People", title: "Informatio\
+n security event reporting" }, { id: "A.7.1", group: "Physical", title: "Physical security perimeter\
+s" }, { id: "A.7.2", group: "Physical", title: "Physical entry" }, { id: "A.7.3", group: "Physical",
+  title: "Securing offices, rooms and facilities" }, { id: "A.7.4", group: "Physical", title: "Physi\
+cal security monitoring" }, { id: "A.7.5", group: "Physical", title: "Protecting against physical an\
+d environmental threats" }, { id: "A.7.6", group: "Physical", title: "Working in secure areas" }, { id: "\
+A.7.7", group: "Physical", title: "Clear desk and clear screen" }, { id: "A.7.8", group: "Physical",
+  title: "Equipment siting and protection" }, { id: "A.7.9", group: "Physical", title: "Security of \
+assets off-premises" }, { id: "A.7.10", group: "Physical", title: "Storage media" }, { id: "A.7.11",
+  group: "Physical", title: "Supporting utilities" }, { id: "A.7.12", group: "Physical", title: "Cab\
+ling security" }, { id: "A.7.13", group: "Physical", title: "Equipment maintenance" }, { id: "A.7.14",
+  group: "Physical", title: "Secure disposal or re-use of equipment" }, { id: "A.8.1", group: "Techn\
+ological", title: "User endpoint devices" }, { id: "A.8.2", group: "Technological", title: "Privileg\
+ed access rights" }, { id: "A.8.3", group: "Technological", title: "Information access restriction" },
+  { id: "A.8.4", group: "Technological", title: "Access to source code" }, { id: "A.8.5", group: "Te\
+chnological", title: "Secure authentication" }, { id: "A.8.6", group: "Technological", title: "Capac\
+ity management" }, { id: "A.8.7", group: "Technological", title: "Protection against malware" }, { id: "\
+A.8.8", group: "Technological", title: "Management of technical vulnerabilities" }, { id: "A.8.9", group: "\
+Technological", title: "Configuration management" }, { id: "A.8.10", group: "Technological", title: "\
+Information deletion" }, { id: "A.8.11", group: "Technological", title: "Data masking" }, { id: "A.8\
+.12", group: "Technological", title: "Data leakage prevention" }, { id: "A.8.13", group: "Technologi\
+cal", title: "Information backup" }, { id: "A.8.14", group: "Technological", title: "Redundancy of i\
+nformation processing facilities" }, { id: "A.8.15", group: "Technological", title: "Logging" }, { id: "\
+A.8.16", group: "Technological", title: "Monitoring activities" }, { id: "A.8.17", group: "Technolog\
+ical", title: "Clock synchronization" }, { id: "A.8.18", group: "Technological", title: "Use of priv\
+ileged utility programs" }, { id: "A.8.19", group: "Technological", title: "Installation of software\
+ on operational systems" }, { id: "A.8.20", group: "Technological", title: "Networks security" }, { id: "\
+A.8.21", group: "Technological", title: "Security of network services" }, { id: "A.8.22", group: "Te\
+chnological", title: "Segregation of networks" }, { id: "A.8.23", group: "Technological", title: "We\
+b filtering" }, { id: "A.8.24", group: "Technological", title: "Use of cryptography" }, { id: "A.8.2\
+5", group: "Technological", title: "Secure development life cycle" }, { id: "A.8.26", group: "Techno\
+logical", title: "Application security requirements" }, { id: "A.8.27", group: "Technological", title: "\
+Secure system architecture and engineering principles" }, { id: "A.8.28", group: "Technological", title: "\
+Secure coding" }, { id: "A.8.29", group: "Technological", title: "Security testing in development an\
+d acceptance" }, { id: "A.8.30", group: "Technological", title: "Outsourced development" }, { id: "A\
+.8.31", group: "Technological", title: "Separation of development, test and production environments" },
+  { id: "A.8.32", group: "Technological", title: "Change management" }, { id: "A.8.33", group: "Tech\
+nological", title: "Test information" }, { id: "A.8.34", group: "Technological", title: "Protection \
+of information systems during audit testing" }] }, nist80053: { name: "NIST SP 800-53 control famili\
+es", edition: "Revision 5", publisher: "NIST", unit: "family", units: "families", note: "Mapped at F\
+AMILY granularity, not to individual controls. Rev 5 has over a thousand controls and enhancements; \
+claiming a per-control mapping we have not performed would be the exact dishonesty this system exist\
+s to prevent. A family counts as automated when at least one verified automated control lands inside\
+ it \u2014 that is a weaker statement than covering the family, and it is stated that way everywhere it i\
+s reported.", clauses: [{ id: "AC", group: "800-53 Rev 5", title: "Access Control" }, { id: "AT", group: "\
+800-53 Rev 5", title: "Awareness and Training" }, { id: "AU", group: "800-53 Rev 5", title: "Audit a\
+nd Accountability" }, { id: "CA", group: "800-53 Rev 5", title: "Assessment, Authorization and Monit\
+oring" }, { id: "CM", group: "800-53 Rev 5", title: "Configuration Management" }, { id: "CP", group: "\
+800-53 Rev 5", title: "Contingency Planning" }, { id: "IA", group: "800-53 Rev 5", title: "Identific\
+ation and Authentication" }, { id: "IR", group: "800-53 Rev 5", title: "Incident Response" }, { id: "\
+MA", group: "800-53 Rev 5", title: "Maintenance" }, { id: "MP", group: "800-53 Rev 5", title: "Media\
+ Protection" }, { id: "PE", group: "800-53 Rev 5", title: "Physical and Environmental Protection" },
+  { id: "PL", group: "800-53 Rev 5", title: "Planning" }, { id: "PM", group: "800-53 Rev 5", title: "\
+Program Management" }, { id: "PS", group: "800-53 Rev 5", title: "Personnel Security" }, { id: "PT",
+  group: "800-53 Rev 5", title: "Personally Identifiable Information Processing and Transparency" },
+  { id: "RA", group: "800-53 Rev 5", title: "Risk Assessment" }, { id: "SA", group: "800-53 Rev 5", title: "\
+System and Services Acquisition" }, { id: "SC", group: "800-53 Rev 5", title: "System and Communicat\
+ions Protection" }, { id: "SI", group: "800-53 Rev 5", title: "System and Information Integrity" }, {
+  id: "SR", group: "800-53 Rev 5", title: "Supply Chain Risk Management" }] } };
+
+  // check.mjs
+  var ID = /^[a-z0-9]+(\.[a-z0-9-]+)+$/;
+  var STATUS = ["automated", "partial", "absent"];
+  var STRENGTH = ["full", "partial"];
+  var METHOD = ["read", "test", "audit"];
+  var CLAIMS = [
+    /\bcertifi(ed|cation)\b/i,
+    /\baccredit(ed|ation)\b/i,
+    /\battest(ed|ation)\b/i,
+    /\bcompliant\b/i,
+    /\bcompliance with\b/i,
+    /\baudited by\b/i,
+    /\bfips[\s-]?(140[\s-]?[23][\s-]?)?(validated|certified|compliant|approved)\b/i
+  ];
+  var FRAMEWORK_WORDS = [
+    /\bsoc[\s-]?[12]\b/i,
+    /\biso[\s-]?270\d\d\b/i,
+    /\b800[\s-]?53\b/i,
+    /\bfedramp\b/i,
+    /\bpci[\s-]?dss\b/i,
+    /\bhitrust\b/i,
+    /\bhipaa\b/i,
+    /\bcsa[\s-]?star\b/i
+  ];
+  var isStr = (v) => typeof v === "string" && v.trim() !== "";
+  var isArr = (v) => Array.isArray(v) && v.length > 0;
+  function prose(control2) {
+    const out = [];
+    const walk = (v) => {
+      if (typeof v === "string") out.push(v);
+      else if (Array.isArray(v)) v.forEach(walk);
+      else if (v && typeof v === "object") {
+        for (const k of Object.keys(v)) {
+          if (k === "maps" || k === "id") continue;
+          walk(v[k]);
+        }
+      }
+    };
+    walk(control2);
+    return out.join("\n");
+  }
+  function checkPlace(place, where, problems) {
+    if (!place || typeof place !== "object") {
+      problems.push(`${where}: not an object`);
+      return;
+    }
+    if (!isStr(place.repo)) problems.push(`${where}: repo is required`);
+    if (!isStr(place.path)) problems.push(`${where}: path is required`);
+    else if (/^[/.]|\s/.test(place.path)) {
+      problems.push(`${where}: path must be repo-relative with no spaces (got "${place.path}")`);
+    }
+    if (place.line !== void 0 && (!Number.isInteger(place.line) || place.line < 1)) {
+      problems.push(`${where}: line must be a positive whole number when present`);
+    }
+  }
+  function checkFrameworks(frameworks2) {
+    const problems = [];
+    const index = /* @__PURE__ */ new Set();
+    if (!frameworks2 || typeof frameworks2 !== "object" || Array.isArray(frameworks2)) {
+      return [["frameworks.json: expected an object keyed by framework id"], index];
+    }
+    for (const id of Object.keys(frameworks2)) {
+      if (id.charAt(0) === "$") continue;
+      const f = frameworks2[id];
+      const at = `frameworks.json[${id}]`;
+      if (!/^[a-z0-9]+$/.test(id)) problems.push(`${at}: id must be lowercase alphanumeric`);
+      if (!f || typeof f !== "object") {
+        problems.push(`${at}: not an object`);
+        continue;
+      }
+      for (const k of ["name", "publisher", "edition"]) {
+        if (!isStr(f[k])) problems.push(`${at}: ${k} is required`);
+      }
+      if (!isStr(f.unit)) problems.push(`${at}: unit is required \u2014 a count with no unit is not a fac\
+t`);
+      if (!isStr(f.units)) problems.push(`${at}: units (the plural) is required`);
+      if (!isArr(f.clauses)) {
+        problems.push(`${at}: clauses must be a non-empty array`);
+        continue;
+      }
+      const seen = /* @__PURE__ */ new Set();
+      for (const c of f.clauses) {
+        if (!c || typeof c !== "object" || !isStr(c.id)) {
+          problems.push(`${at}: a clause has no id`);
+          continue;
+        }
+        if (seen.has(c.id)) problems.push(`${at}: duplicate clause ${c.id}`);
+        seen.add(c.id);
+        if (!isStr(c.title)) problems.push(`${at}.${c.id}: title is required`);
+        if (c.group !== void 0 && !isStr(c.group)) {
+          problems.push(`${at}.${c.id}: group must be a non-empty string when present`);
+        }
+        index.add(`${id}:${c.id}`);
+      }
+    }
+    return [problems, index];
+  }
+  function checkControls(input, clauseIndex) {
+    const problems = [];
+    const controls2 = Array.isArray(input) ? input : input && input.controls;
+    if (!Array.isArray(controls2)) {
+      return ["controls.json: expected a list of controls, or an envelope holding one"];
+    }
+    const seen = /* @__PURE__ */ new Set();
+    for (let i = 0; i < controls2.length; i++) {
+      const c = controls2[i];
+      const at = `controls.json[${c && c.id || i}]`;
+      if (!c || typeof c !== "object") {
+        problems.push(`${at}: not an object`);
+        continue;
+      }
+      if (!isStr(c.id)) problems.push(`${at}: id is required`);
+      else if (!ID.test(c.id)) problems.push(`${at}: id must be dotted lowercase, e.g. iam.pkce.s256`);
+      else if (seen.has(c.id)) problems.push(`${at}: duplicate id`);
+      if (isStr(c.id)) seen.add(c.id);
+      for (const k of ["claim", "mechanism"]) {
+        if (!isStr(c[k])) problems.push(`${at}: ${k} is required`);
+      }
+      if (c.title !== void 0 && !isStr(c.title)) {
+        problems.push(`${at}: title must be a non-empty string when present`);
+      }
+      if (STATUS.indexOf(c.status) < 0) {
+        problems.push(`${at}: status must be one of ${STATUS.join(", ")}`);
+      }
+      if (c.status !== "automated" && !isStr(c.note)) {
+        problems.push(`${at}: status "${c.status}" requires a note saying what is missing`);
+      }
+      if (!isArr(c.enforced)) problems.push(`${at}: enforced must name at least one place`);
+      else c.enforced.forEach((p, n) => checkPlace(p, `${at}.enforced[${n}]`, problems));
+      if (!isArr(c.verified)) problems.push(`${at}: verified must name at least one check`);
+      else
+        c.verified.forEach((v, n) => {
+          const vat = `${at}.verified[${n}]`;
+          if (!v || typeof v !== "object" || METHOD.indexOf(v.method) < 0) {
+            problems.push(`${vat}: method must be one of ${METHOD.join(", ")}`);
+            return;
+          }
+          if (v.method === "audit") {
+            if (!isArr(v.actions) || !v.actions.every(isStr)) {
+              problems.push(`${vat}: an audit check must name the actions that evidence it`);
+            }
+          } else if (!isArr(v.at)) {
+            problems.push(`${vat}: a ${v.method} check must name where it is`);
+          } else {
+            v.at.forEach((p, m) => checkPlace(p, `${vat}.at[${m}]`, problems));
+          }
+        });
+      if (!isArr(c.maps)) problems.push(`${at}: maps must name at least one clause`);
+      else {
+        const refs = /* @__PURE__ */ new Set();
+        for (const m of c.maps) {
+          if (!m || typeof m !== "object" || !isStr(m.clause)) {
+            problems.push(`${at}: a mapping has no clause`);
+            continue;
+          }
+          if (STRENGTH.indexOf(m.strength) < 0) {
+            problems.push(`${at} -> ${m.clause}: strength must be one of ${STRENGTH.join(", ")}`);
+          }
+          if (!clauseIndex.has(m.clause)) {
+            problems.push(`${at} -> ${m.clause}: no framework declares that clause`);
+          }
+          if (refs.has(m.clause)) problems.push(`${at}: duplicate mapping to ${m.clause}`);
+          refs.add(m.clause);
+        }
+      }
+      const text = prose(c);
+      for (const re of CLAIMS) {
+        const hit = re.exec(text);
+        if (hit) problems.push(`${at}: prose claims "${hit[0]}" \u2014 this repo does not claim status`);
+      }
+      for (const re of FRAMEWORK_WORDS) {
+        const hit = re.exec(text);
+        if (hit) {
+          problems.push(
+            `${at}: prose names "${hit[0]}" \u2014 a framework belongs in maps, where it carries a number`
+          );
+        }
+      }
+    }
+    return problems;
+  }
 
   // src/inventory.ts
   var CONTROLS = define_CONTROLS_default;
   var FRAMEWORKS = define_FRAMEWORKS_default;
-  var VERSION = "0.1.0";
+  var VERSION = "0.2.0";
   function ids() {
     const out = [];
     for (const k in FRAMEWORKS) {
@@ -66,6 +773,271 @@
     return [];
   }
 
+  // src/db.ts
+  function db() {
+    const d = globalThis.__db;
+    return d && typeof d.query === "function" ? d : null;
+  }
+  function own() {
+    const f = globalThis.__own;
+    return typeof f === "function" ? f() : false;
+  }
+  function newId() {
+    const f = globalThis.__newId;
+    if (typeof f !== "function") throw new Error("trust: host injected no __newId");
+    return f();
+  }
+  var KINDS = [
+    "profile",
+    "control",
+    "document",
+    "subprocessor",
+    "policy",
+    "faq",
+    "update",
+    "risk"
+  ];
+  function isKind(s) {
+    for (let i = 0; i < KINDS.length; i++) if (KINDS[i] === s) return true;
+    return false;
+  }
+  var SINGLE = { profile: true, risk: true };
+  function parse(r) {
+    let data = {};
+    try {
+      const v = JSON.parse(r.data);
+      if (v && typeof v === "object" && !Array.isArray(v)) data = v;
+    } catch (e) {
+      data = {};
+    }
+    return { id: r.id, ord: Number(r.ord) || 0, updated: Number(r.updated) || 0, data };
+  }
+  function list(kind) {
+    const d = db();
+    if (!d) return [];
+    const rows = d.query(
+      "SELECT kind, id, ord, data, updated FROM record WHERE kind = ? ORDER BY ord ASC, id ASC",
+      [kind]
+    );
+    const out = [];
+    for (let i = 0; i < rows.length; i++) out.push(parse(rows[i]));
+    return out;
+  }
+  function get(kind, id) {
+    const d = db();
+    if (!d) return null;
+    const rows = d.query(
+      "SELECT kind, id, ord, data, updated FROM record WHERE kind = ? AND id = ?",
+      [kind, id]
+    );
+    return rows.length ? parse(rows[0]) : null;
+  }
+  function put(kind, id, ord, data, at) {
+    const d = db();
+    if (!d) throw new Error("trust: no store");
+    d.exec(
+      "INSERT INTO record (kind, id, ord, data, updated) VALUES (?, ?, ?, ?, ?) ON CONFLICT(kind, id\
+) DO UPDATE SET ord = excluded.ord, data = excluded.data, updated = excluded.updated",
+      [kind, id, ord, JSON.stringify(data), at]
+    );
+  }
+  function drop(kind, id) {
+    const d = db();
+    if (!d) throw new Error("trust: no store");
+    return d.exec("DELETE FROM record WHERE kind = ? AND id = ?", [kind, id]).changes;
+  }
+
+  // src/center.ts
+  var CATEGORIES = [
+    "infrastructure",
+    "data",
+    "access",
+    "network",
+    "endpoint",
+    "corporate",
+    "product",
+    "incident"
+  ];
+  var KINDS2 = {
+    soc2: { label: "SOC 2 report", attested: true },
+    iso: { label: "ISO/IEC 27001 certificate", attested: true },
+    pentest: { label: "Penetration test report", attested: true },
+    letter: { label: "Auditor letter", attested: true },
+    caiq: { label: "CAIQ self-assessment", attested: false },
+    sig: { label: "SIG self-assessment", attested: false },
+    vsa: { label: "VSA self-assessment", attested: false },
+    questionnaire: { label: "Security questionnaire", attested: false },
+    policy: { label: "Policy", attested: false },
+    other: { label: "Document", attested: false }
+  };
+  var TIERS = ["public", "gated"];
+  var str = (v) => typeof v === "string" ? v.trim() : "";
+  var has = (v) => str(v) !== "";
+  function controls() {
+    const base = own() ? CONTROLS : [];
+    const seen = {};
+    for (let i = 0; i < base.length; i++) seen[base[i].id] = true;
+    const out = base.slice();
+    const rows = list("control");
+    for (let i = 0; i < rows.length; i++) {
+      const c = Object.assign({}, rows[i].data, { id: rows[i].id });
+      if (seen[c.id]) continue;
+      out.push(c);
+    }
+    return out;
+  }
+  function baseline(id) {
+    if (!own()) return false;
+    for (let i = 0; i < CONTROLS.length; i++) if (CONTROLS[i].id === id) return true;
+    return false;
+  }
+  function validate(kind, id, data) {
+    switch (kind) {
+      case "control": {
+        const c = Object.assign({}, data, { id });
+        const [, index] = checkFrameworks(FRAMEWORKS);
+        const problems = checkControls([c], index);
+        const cat = str(data.category);
+        if (cat) {
+          let ok2 = false;
+          for (let i = 0; i < CATEGORIES.length; i++) if (CATEGORIES[i] === cat) ok2 = true;
+          if (!ok2) problems.push("category must be one of " + CATEGORIES.join(", "));
+        }
+        return problems;
+      }
+      case "document": {
+        const p = [];
+        if (!has(data.title)) p.push("title is required");
+        const k = str(data.kind) || "other";
+        if (!Object.prototype.hasOwnProperty.call(KINDS2, k)) {
+          p.push("kind must be one of " + Object.keys(KINDS2).join(", "));
+          return p;
+        }
+        const tier = str(data.tier) || "gated";
+        if (TIERS.indexOf(tier) < 0) p.push("tier must be public or gated");
+        if (KINDS2[k].attested && tier === "public") {
+          p.push(
+            "a " + KINDS2[k].label + " is attested by someone outside this organization, so it is re\
+leased through a grant rather than published"
+          );
+        }
+        return p;
+      }
+      case "subprocessor": {
+        const p = [];
+        if (!has(data.name)) p.push("name is required");
+        if (!has(data.purpose)) p.push("purpose is required \u2014 a name alone says nothing");
+        return p;
+      }
+      case "policy":
+        return has(data.title) ? [] : ["title is required"];
+      case "faq": {
+        const p = [];
+        if (!has(data.question)) p.push("question is required");
+        if (!has(data.answer)) p.push("answer is required");
+        return p;
+      }
+      case "update": {
+        const p = [];
+        if (!has(data.title)) p.push("title is required");
+        if (!has(data.at)) p.push("at is required \u2014 an update with no date cannot be read in order");
+        return p;
+      }
+      case "profile":
+        return has(data.name) ? [] : ["name is required"];
+      case "risk":
+        return Array.isArray(data.items) ? [] : ["items must be a list of {label, value}"];
+    }
+    return ["unknown section " + kind];
+  }
+  function write(kind, id, body, at) {
+    if (!isKind(kind)) return { ok: false, status: 404, message: "no trust section " + kind };
+    const k = kind;
+    if (!body || typeof body !== "object" || Array.isArray(body)) {
+      return { ok: false, status: 400, message: "body must be an object" };
+    }
+    const data = Object.assign({}, body);
+    let key = SINGLE[k] ? "" : str(id) || newId();
+    delete data.id;
+    if (k === "control" && baseline(key)) {
+      return {
+        ok: false,
+        status: 409,
+        message: "control " + key + " is part of this deployment's own inventory, which is governed \
+in git and cannot be authored through the API"
+      };
+    }
+    const errors = validate(k, key, data);
+    if (errors.length) {
+      return { ok: false, status: 400, message: "the " + k + " is malformed", errors };
+    }
+    if (k === "document" && !has(data.tier)) data.tier = "gated";
+    const ord = typeof data.ord === "number" ? data.ord : 0;
+    delete data.ord;
+    put(k, key, ord, data, at);
+    return { ok: true, wrote: { kind: k, id: key, updated: at } };
+  }
+  function remove(kind, id) {
+    if (!isKind(kind)) return { ok: false, status: 404, message: "no trust section " + kind };
+    const k = kind;
+    if (k === "control" && baseline(id)) {
+      return {
+        ok: false,
+        status: 409,
+        message: "control " + id + " is part of this deployment's own inventory and is removed by a \
+commit, not by a request"
+      };
+    }
+    const n = drop(k, SINGLE[k] ? "" : id);
+    if (!n) return { ok: false, status: 404, message: "no " + k + " " + id };
+    return { ok: true, status: 200, message: "" };
+  }
+  function shaped(rows) {
+    const out = [];
+    for (let i = 0; i < rows.length; i++) {
+      const r = Object.assign({}, rows[i].data);
+      r.id = rows[i].id;
+      r.updated = rows[i].updated;
+      out.push(r);
+    }
+    return out;
+  }
+  function section(kind) {
+    return shaped(list(kind));
+  }
+  function single(kind) {
+    const r = get(kind, "");
+    if (!r) return null;
+    const out = Object.assign({}, r.data);
+    out.updated = r.updated;
+    return out;
+  }
+  function document(d, grant) {
+    const k = str(d.kind) || "other";
+    const meta = Object.prototype.hasOwnProperty.call(KINDS2, k) ? KINDS2[k] : KINDS2.other;
+    const tier = str(d.tier) || "gated";
+    const open = tier === "public" || grant;
+    const out = {
+      id: d.id,
+      title: d.title,
+      kind: k,
+      label: meta.label,
+      attested: meta.attested,
+      tier,
+      updated: d.updated
+    };
+    if (has(d.note)) out.note = d.note;
+    if (open && has(d.href)) out.href = d.href;
+    out.released = open;
+    return out;
+  }
+  function documents(grant) {
+    const rows = section("document");
+    const out = [];
+    for (let i = 0; i < rows.length; i++) out.push(document(rows[i], grant));
+    return out;
+  }
+
   // src/coverage.ts
   var RANK = { none: 0, partial: 1, automated: 2 };
   function worth(c, m) {
@@ -74,33 +1046,35 @@
     if (m.strength !== "full") return "partial";
     return verified(c) ? "automated" : "partial";
   }
-  function inventory() {
+  function inventory(cs = CONTROLS) {
     let automated = 0;
     let partial = 0;
     let absent = 0;
     let unverified = 0;
-    for (let i = 0; i < CONTROLS.length; i++) {
-      const c = CONTROLS[i];
+    for (let i = 0; i < cs.length; i++) {
+      const c = cs[i];
       if (c.status === "automated") automated++;
       else if (c.status === "partial") partial++;
       else absent++;
       if (!verified(c)) unverified++;
     }
     return {
-      total: CONTROLS.length,
+      total: cs.length,
       automated,
       partial,
       absent,
       unverified,
-      statement: automated + " of " + CONTROLS.length + " controls automated, " + partial + " partial, " + absent + " absent" + (unverified ? "; " + unverified + " rest on a reading rather than a test" : "")
+      statement: automated + " of " + cs.length + " controls automated, " + partial + " partial, " +
+      absent + " absent" + (unverified ? "; " + unverified + " rest on a reading rather than a test" :
+      "")
     };
   }
-  function coverClause(clause, id) {
+  function coverClause(clause, id, cs) {
     let level = "none";
     const hits = [];
     const ref = id + ":" + clause.id;
-    for (let i = 0; i < CONTROLS.length; i++) {
-      const c = CONTROLS[i];
+    for (let i = 0; i < cs.length; i++) {
+      const c = cs[i];
       for (let j = 0; j < c.maps.length; j++) {
         const m = c.maps[j];
         if (m.clause !== ref) continue;
@@ -120,11 +1094,11 @@
     if (clause.group) out.group = clause.group;
     return out;
   }
-  function summarize(id, f) {
+  function summarize(id, f, cs) {
     const clauses = [];
     const tally = { total: f.clauses.length, automated: 0, partial: 0, none: 0 };
     for (let i = 0; i < f.clauses.length; i++) {
-      const cc = coverClause(f.clauses[i], id);
+      const cc = coverClause(f.clauses[i], id, cs);
       clauses.push(cc);
       tally[cc.level]++;
     }
@@ -139,21 +1113,22 @@
       automated: tally.automated,
       partial: tally.partial,
       none: tally.none,
-      statement: tally.automated + " of " + tally.total + " " + f.units + " have an automated control, " + tally.partial + " partial, " + tally.none + " none",
+      statement: tally.automated + " of " + tally.total + " " + f.units + " have an automated contro\
+l, " + tally.partial + " partial, " + tally.none + " none",
       clauses
     };
     if (f.note) detail.note = f.note;
     return detail;
   }
-  function framework2(id) {
+  function framework2(id, cs = CONTROLS) {
     const f = framework(id);
-    return f ? summarize(id, f) : null;
+    return f ? summarize(id, f, cs) : null;
   }
-  function summary() {
-    const list = ids();
+  function summary(cs = CONTROLS) {
+    const list2 = ids();
     const out = [];
-    for (let i = 0; i < list.length; i++) {
-      const d = summarize(list[i], framework(list[i]));
+    for (let i = 0; i < list2.length; i++) {
+      const d = summarize(list2[i], framework(list2[i]), cs);
       const row = {
         framework: d.framework,
         name: d.name,
@@ -170,7 +1145,7 @@
       if (d.note) row.note = d.note;
       out.push(row);
     }
-    return { controls: inventory(), frameworks: out };
+    return { controls: inventory(cs), frameworks: out };
   }
 
   // src/host.ts
@@ -251,7 +1226,8 @@
         actions,
         queried: false,
         total: 0,
-        note: "no audit action evidences this control; it is verified by reading the source at the files the inventory names, not from the trail",
+        note: "no audit action evidences this control; it is verified by reading the source at the f\
+iles the inventory names, not from the trail",
         enforced: c.enforced
       });
     }
@@ -279,44 +1255,125 @@
   }
 
   // src/index.ts
+  function frameworks() {
+    return ids().map((id) => {
+      const f = framework(id);
+      return {
+        framework: id,
+        name: f ? f.name : "",
+        publisher: f ? f.publisher : "",
+        edition: f ? f.edition : "",
+        unit: f ? f.unit : "",
+        units: f ? f.units : "",
+        total: f ? f.clauses.length : 0
+      };
+    });
+  }
+  function find(id) {
+    const cs = controls();
+    for (let i = 0; i < cs.length; i++) if (cs[i].id === id) return cs[i];
+    return control(id);
+  }
+  function center(org, grant) {
+    const cs = controls();
+    const s = summary(cs);
+    const profile = single("profile") || {};
+    return {
+      version: VERSION,
+      generated: now(),
+      org,
+      profile,
+      controls: cs,
+      coverage: s.frameworks,
+      inventory: s.controls,
+      frameworks: frameworks(),
+      documents: documents(grant),
+      subprocessors: section("subprocessor"),
+      policies: section("policy"),
+      faq: section("faq"),
+      updates: section("update"),
+      risk: single("risk") || { items: [] }
+    };
+  }
   var routes = {
     health: () => ok({ service: "trust", status: "ok", version: VERSION }),
-    "controls.list": () => ok(__spreadProps(__spreadValues({ version: VERSION }, summary().controls), { controls: CONTROLS })),
-    "controls.get": (ctx) => {
-      const c = control(ctx.params.id || "");
-      return c ? ok(c) : notFound("no control " + (ctx.params.id || "") + " in the inventory");
+    center: (ctx) => ok(center(ctx.org, true)),
+    // The public door. It answers only for an organization that has said its
+    // centre is public: an unpublished one is NOT FOUND rather than empty, because
+    // an empty centre and a centre nobody meant to show read the same and are not
+    // the same. No credential reaches here, so nothing gated does either.
+    published: (ctx) => {
+      const p = single("profile");
+      if (!p || p.published !== true) {
+        return notFound("no published trust centre for " + ctx.org);
+      }
+      return ok(center(ctx.org, false));
     },
-    "frameworks.list": () => ok({
-      frameworks: ids().map((id) => {
-        const f = framework(id);
-        return {
-          framework: id,
-          name: f ? f.name : "",
-          publisher: f ? f.publisher : "",
-          edition: f ? f.edition : "",
-          unit: f ? f.unit : "",
-          units: f ? f.units : "",
-          total: f ? f.clauses.length : 0
-        };
-      })
-    }),
-    "coverage.list": () => ok(__spreadValues({ version: VERSION, generated: now() }, summary())),
+    "profile.get": () => ok(single("profile") || {}),
+    "controls.list": () => {
+      const cs = controls();
+      return ok(__spreadProps(__spreadValues({ version: VERSION }, summary(cs).controls), { controls: cs }));
+    },
+    "controls.get": (ctx) => {
+      const c = find(ctx.params.id || "");
+      return c ? ok(c) : notFound("no control " + (ctx.params.id || "") + " in this trust centre");
+    },
+    "frameworks.list": () => ok({ frameworks: frameworks() }),
+    "coverage.list": () => {
+      const cs = controls();
+      return ok(__spreadValues({ version: VERSION, generated: now() }, summary(cs)));
+    },
     "coverage.get": (ctx) => {
       const id = ctx.params.framework || "";
-      const d = framework2(id);
+      const d = framework2(id, controls());
       if (!d) return notFound("no framework " + id + " is mapped", { frameworks: ids() });
       return ok(__spreadValues({ version: VERSION, generated: now() }, d));
     },
-    "evidence.get": query
+    "documents.list": () => ok({ documents: documents(true) }),
+    "subprocessors.list": () => ok({ subprocessors: section("subprocessor") }),
+    "policies.list": () => ok({ policies: section("policy") }),
+    "faq.list": () => ok({ faq: section("faq") }),
+    "updates.list": () => ok({ updates: section("update") }),
+    "risk.get": () => ok(single("risk") || { items: [] }),
+    "evidence.get": query,
+    // ONE write route for every section. What may be in a record is decided by
+    // center.validate, which runs the SAME module the build gate runs, so a
+    // control authored here is held to the rule a committed one is held to.
+    "section.put": (ctx, req) => {
+      const kind = ctx.params.kind || "";
+      const at = now();
+      const r = write(kind, ctx.params.id || "", req.body, at);
+      if (!r.ok) {
+        const body = { success: false, message: r.message };
+        if (r.errors) body.errors = r.errors;
+        return { status: r.status, body };
+      }
+      return ok(r.wrote);
+    },
+    "section.delete": (ctx) => {
+      const r = remove(ctx.params.kind || "", ctx.params.id || "");
+      if (!r.ok) return { status: r.status, body: { success: false, message: r.message } };
+      return ok({ kind: ctx.params.kind, id: ctx.params.id, deleted: true });
+    }
   };
-  var WRITE = "trust is read-only: the control inventory is build-time data governed in git, and the audit trail is written by the platform. Neither can be authored here.";
+  var WRITES = {
+    "section.put": "PUT",
+    "section.delete": "DELETE"
+  };
+  var READ_ONLY = "the trust inventory is read here: this deployment's own controls are build-time d\
+ata governed in git, and the audit trail is written by the platform.";
   globalThis.handle = (req) => {
     req = req || {};
     const route = req.route || "";
     const fn = routes[route];
     if (!fn) return notFound("no trust route " + route);
     const method = (req.method || "GET").toUpperCase();
-    if (method !== "GET" && method !== "HEAD") return readOnly(WRITE);
+    const wants = WRITES[route];
+    if (wants) {
+      if (method !== wants) return readOnly(READ_ONLY);
+    } else if (method !== "GET" && method !== "HEAD") {
+      return readOnly(READ_ONLY);
+    }
     const org = req.orgId || "";
     if (route !== "health" && !org) {
       return { status: 401, body: { success: false, message: "missing tenant" } };
@@ -331,7 +1388,7 @@
       }
     }
     try {
-      return fn({ org, params });
+      return fn({ org, params }, req);
     } catch (err) {
       return {
         status: 500,
@@ -341,7 +1398,7 @@
   };
   globalThis.trust = {
     version: VERSION,
-    controls: () => CONTROLS,
+    controls: () => controls(),
     frameworks: () => ids(),
     summary,
     framework: framework2

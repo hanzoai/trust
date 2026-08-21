@@ -35,14 +35,27 @@ it("an unknown route is the bundle's OWN 404", () => {
   assert.match(res.body.message, /no trust route/);
 });
 
-it("a write is refused with the reason, not merely missing", () => {
+it("a write to a READ route is refused with the reason, not merely missing", () => {
   const { handle } = load();
   for (const method of ["POST", "PUT", "PATCH", "DELETE"]) {
     const res = handle({ route: "controls.list", method, orgId: ORG, body: { id: "mine" } });
     assert.equal(res.status, 405, method);
-    assert.match(res.body.message, /read-only/);
+    assert.match(res.body.message, /governed in git/);
     assert.equal(res.body.allow, "GET");
   }
+});
+
+// A route that DOES write answers exactly one method. Getting this backwards
+// would make section.put reachable by GET, which is how a link becomes a write.
+it("a write route answers its own method and no other", () => {
+  const { handle } = load();
+  const params = { kind: "faq", id: "q1" };
+  const body = { question: "Where does the data live?", answer: "In our own cloud." };
+  for (const method of ["GET", "POST", "PATCH", "DELETE"]) {
+    const res = handle({ route: "section.put", method, params, orgId: ORG, body });
+    assert.equal(res.status, 405, method);
+  }
+  assert.equal(handle({ route: "section.put", method: "PUT", params, orgId: ORG, body }).status, 200);
 });
 
 it("an unknown route beats a bad method — 404 before 405", () => {
@@ -238,11 +251,28 @@ it("the bundle reaches for no global the host does not inject", () => {
     /\bfetch\s*\(/,
     /\bDate\s*\.\s*now\b/,
     /\bsetTimeout\s*\(/,
-    /\b__db\b/,
-    /\b__newId\b/,
   ];
   for (const re of reads) {
     const hit = re.exec(src);
     assert.equal(hit, null, `bundle.js reaches for ${hit && hit[0]}`);
   }
+});
+
+// The host contract, pinned in the direction that actually rots. The list above
+// says what the bundle may not touch; this says the __-prefixed globals it DOES
+// touch are exactly the five the Go host injects. A sixth added in src/ fails
+// here rather than at a tenant's first request, which is the only moment the
+// mistake is cheap — the host and the bundle ship from two repos.
+it("the host globals the bundle reads are exactly the declared five", () => {
+  const src = source();
+  // esbuild's own helpers are __-prefixed too (__spreadValues, __hasOwnProp),
+  // and the thing that tells them apart is not their spelling: a helper is
+  // DECLARED in this file and a host global is not. So subtract the declarations
+  // rather than maintaining a list of esbuild's internals, which would need
+  // editing every time esbuild changes one.
+  const declared = new Set([...src.matchAll(/\bvar\s+(__[a-zA-Z0-9]+)\s*=/g)].map((m) => m[1]));
+  const free = [...new Set(src.match(/\b__[a-zA-Z][a-zA-Z0-9]*\b/g) || [])]
+    .filter((n) => !declared.has(n))
+    .sort();
+  assert.deepEqual(free, ["__audit", "__db", "__newId", "__now", "__own"]);
 });

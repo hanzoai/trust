@@ -1,12 +1,13 @@
 {
-  "$comment": "The control inventory. Each entry names a mechanism, where it is enforced, how we know it holds, and which published clauses it maps to. `status` is what the control DOES (automated | partial | absent); whether anything can FAIL on its behalf is derived from `verified` \u2014 a reading is not a test. Several entries record that a mechanism is weaker than a Hanzo page says it is; that is the point of the file. Nothing in this schema can express a certification, and the build refuses prose that tries.",
+  "$comment": "The control inventory. Each entry names a mechanism, where it is enforced, how we know it holds, and which published clauses it maps to. `status` is what the control DOES (automated | partial | absent); whether anything can FAIL on its behalf is derived from `verified` — a reading is not a test. Several entries record that a mechanism is weaker than a Hanzo page says it is; that is the point of the file. Nothing in this schema can express a certification, and the build refuses prose that tries.",
   "controls": [
     {
       "id": "iam.issuer",
+      "category": "access",
       "claim": "Hanzo IAM issues every credential, and signing in is an OIDC redirect rather than a form any application holds.",
       "mechanism": "The authorization endpoint validates the request and returns a code; a single mint path turns that code into tokens. Everything else in the estate consumes tokens rather than issuing them.",
       "status": "partial",
-      "note": "Partial for scope, not for quality. The redirect flow and the single mint path are both there to read. Establishing that NOTHING else in the estate issues a credential means auditing every service for a second path, and that sweep has not been done \u2014 so the narrower word is the honest one.",
+      "note": "Partial for scope, not for quality. The redirect flow and the single mint path are both there to read. Establishing that NOTHING else in the estate issues a credential means auditing every service for a second path, and that sweep has not been done — so the narrower word is the honest one.",
       "enforced": [
         {
           "repo": "hanzoai/iam",
@@ -83,7 +84,8 @@
     },
     {
       "id": "iam.pkce.s256",
-      "claim": "A client with no registered secret must present a challenge, and only the hashed method is accepted \u2014 offering the plain method is refused rather than quietly downgraded.",
+      "category": "access",
+      "claim": "A client with no registered secret must present a challenge, and only the hashed method is accepted — offering the plain method is refused rather than quietly downgraded.",
       "mechanism": "A public client arriving with no challenge is refused at the authorization endpoint. An explicitly supplied method other than the hashed one is refused there, at the mint path, and at the token endpoint; the verifier compares against a single constant. Discovery advertises the hashed method alone.",
       "status": "automated",
       "enforced": [
@@ -123,7 +125,7 @@
               "symbol": "Discovery"
             }
           ],
-          "detail": "Three refusal sites were read: the authorization endpoint, the mint path and the verifier. Two boundaries are worth knowing \u2014 an OMITTED method defaults to the hashed one rather than being refused, so the method parameter is optional while the challenge is not; and the device-code grant has no challenge branch at all."
+          "detail": "Three refusal sites were read: the authorization endpoint, the mint path and the verifier. Two boundaries are worth knowing — an OMITTED method defaults to the hashed one rather than being refused, so the method parameter is optional while the challenge is not; and the device-code grant has no challenge branch at all."
         }
       ],
       "maps": [
@@ -155,6 +157,7 @@
     },
     {
       "id": "iam.password.argon2id",
+      "category": "access",
       "claim": "New passwords are hashed with a memory-hard function at 64 MiB and two passes with a random salt, the cost parameters ride inside the stored digest, and an unrecognised scheme fails closed.",
       "mechanism": "One credential package owns hashing. It writes a digest carrying memory, passes and parallelism, so raising the cost later does not lock anyone out. Verification reads the scheme off the row and refuses anything outside the supported set; the terminal path returns false rather than falling through.",
       "status": "automated",
@@ -185,7 +188,7 @@
               "symbol": "CheckPassword"
             }
           ],
-          "detail": "The parameter block reads 64 MiB memory, 2 iterations, 16-byte salt, 32-byte key, and the digest is written in the standard parameterised form. An older scheme remains an accepted VERIFY path so legacy rows still authenticate; every new or updated digest uses the memory-hard one. The doc comment on the user record describes this backwards \u2014 the prose is stale, the code is not."
+          "detail": "The parameter block reads 64 MiB memory, 2 iterations, 16-byte salt, 32-byte key, and the digest is written in the standard parameterised form. An older scheme remains an accepted VERIFY path so legacy rows still authenticate; every new or updated digest uses the memory-hard one. The doc comment on the user record describes this backwards — the prose is stale, the code is not."
         }
       ],
       "maps": [
@@ -213,6 +216,7 @@
     },
     {
       "id": "iam.token.algorithms",
+      "category": "access",
       "claim": "Bearer tokens verify against a closed list of signing algorithms. Symmetric signing and the none algorithm are absent from it, so no forged header can select a path where the verifying key is also the signing key.",
       "mechanism": "One accepted-algorithms list is handed to the parser as its valid-methods option on the single verification path. The post-quantum signature method is registered against a real implementation, not a placeholder, and is in the default build.",
       "status": "automated",
@@ -283,6 +287,7 @@
     },
     {
       "id": "iam.refresh.rotation",
+      "category": "access",
       "claim": "Refresh tokens are single-use. Spending one mints a successor in the same family; presenting a spent one deletes every token in that family, the working successor included.",
       "mechanism": "Redemption marks the row consumed before the successor is issued, and the successor inherits the family id set when the grant was established. A request carrying an already-consumed token revokes the family and answers with a grant error.",
       "status": "automated",
@@ -303,7 +308,7 @@
               "symbol": "Refresh"
             }
           ],
-          "detail": "The consumed flag is set before the successor is minted, and the family cascade DELETES rows rather than only flagging them. One caveat: the cascade is best-effort \u2014 it swallows the list error and ignores each delete error while still refusing the caller \u2014 so a partial revocation fails quietly and only the caller's refusal is guaranteed."
+          "detail": "The consumed flag is set before the successor is minted, and the family cascade DELETES rows rather than only flagging them. One caveat: the cascade is best-effort — it swallows the list error and ignores each delete error while still refusing the caller — so a partial revocation fails quietly and only the caller's refusal is guaranteed."
         }
       ],
       "maps": [
@@ -335,6 +340,7 @@
     },
     {
       "id": "iam.mfa.sessions",
+      "category": "access",
       "claim": "Adding a second factor, removing one, or changing which is preferred drops every other session and clears the remember-this-device window.",
       "mechanism": "All three mutations run through one save path, which revokes every session but the calling one and blanks the remember deadline and its digest. A session id pruned from the row is treated as revoked on its next resolve.",
       "status": "automated",
@@ -397,7 +403,8 @@
     },
     {
       "id": "iam.scim.users",
-      "claim": "A directory provisions users over the standard protocol \u2014 create, update, replace, deactivate, delete, with filter and patch. Someone removed from your directory loses their account by that act.",
+      "category": "access",
+      "claim": "A directory provisions users over the standard protocol — create, update, replace, deactivate, delete, with filter and patch. Someone removed from your directory loses their account by that act.",
       "mechanism": "A provisioning surface routes the full user lifecycle and publishes its service-provider configuration, schemas and resource types for a client to discover.",
       "status": "automated",
       "enforced": [
@@ -463,8 +470,9 @@
     },
     {
       "id": "iam.scim.groups",
+      "category": "access",
       "claim": "Group membership arrives from a customer directory and drives role assignment.",
-      "mechanism": "None. There is no group route, no handler, and no group resource type \u2014 the published resource-type set has exactly one member.",
+      "mechanism": "None. There is no group route, no handler, and no group resource type — the published resource-type set has exactly one member.",
       "status": "absent",
       "note": "Absent, not stubbed. Role assignment cannot be driven from a customer directory today: users provision, group membership does not. A request for the group collection answers a plain 404 rather than a protocol error document, because the published-resource path covers only schema and resource-type lookups.",
       "enforced": [
@@ -504,8 +512,9 @@
     },
     {
       "id": "iam.passkey.signin",
+      "category": "access",
       "claim": "A registered passkey can be used to sign in.",
-      "mechanism": "None in the running build. Passkey credentials can be registered and managed, and there is no assertion ceremony to challenge one \u2014 no begin-login route of any spelling exists.",
+      "mechanism": "None in the running build. Passkey credentials can be registered and managed, and there is no assertion ceremony to challenge one — no begin-login route of any spelling exists.",
       "status": "absent",
       "note": "The capability flag returns false and the login descriptor is masked, so no screen offers passkey sign-in. That is the only honest thing a login screen can do about a method the server cannot perform. Second factors that do work: an authenticator app, SMS and email, with recovery codes.",
       "enforced": [
@@ -563,10 +572,11 @@
     },
     {
       "id": "authz.path.grant",
+      "category": "access",
       "claim": "A resource has a path, and a grant covers a path and everything below it, so org-wide access, one workspace, and a narrowed agent credential all fall out of one check.",
       "mechanism": "One authorization function tests the requested path against the paths a caller holds, admitting a path and its descendants.",
       "status": "partial",
-      "note": "The containment model is real and it is one function. What it is built on is a byte-by-byte prefix comparison, which does not do what the model needs \u2014 that is recorded separately as authz.path.segment, and it is why this is partial rather than automated.",
+      "note": "The containment model is real and it is one function. What it is built on is a byte-by-byte prefix comparison, which does not do what the model needs — that is recorded separately as authz.path.segment, and it is why this is partial rather than automated.",
       "enforced": [
         {
           "repo": "hanzoai/iam",
@@ -616,10 +626,11 @@
     },
     {
       "id": "authz.path.segment",
+      "category": "access",
       "claim": "A grant on one path does not cover a longer path that merely starts with the same characters, because the comparison advances a segment at a time.",
       "mechanism": "None. The comparison is a byte prefix. The collisions someone already hit are handled by a separate exact-match table rather than by making the comparison segment-wise.",
       "status": "absent",
-      "note": "Recorded absent because the mechanism named in the claim does not exist \u2014 not because path authorization is missing. The comment above the function records hitting this exact hazard, where one action name is a character prefix of another, and working around it with an exact-match map. That workaround covers the collisions someone thought of; a segment walk would make the whole class impossible. A segment-wise implementation exists elsewhere in the estate but is not on this path.",
+      "note": "Recorded absent because the mechanism named in the claim does not exist — not because path authorization is missing. The comment above the function records hitting this exact hazard, where one action name is a character prefix of another, and working around it with an exact-match map. That workaround covers the collisions someone thought of; a segment walk would make the whole class impossible. A segment-wise implementation exists elsewhere in the estate but is not on this path.",
       "enforced": [
         {
           "repo": "hanzoai/iam",
@@ -665,6 +676,7 @@
     },
     {
       "id": "edge.identity.headers",
+      "category": "network",
       "claim": "Headers naming an organization, a user, an email or a role are stripped at the edge before a handler reads one, and identity is written back only from a verified token.",
       "mechanism": "The request middleware deletes every authority header and every sub-scope header by name, then re-mints them from validated claims. A second layer deletes any header in two reserved families by prefix, so a new name cannot arrive unhandled.",
       "status": "automated",
@@ -727,7 +739,8 @@
     },
     {
       "id": "base.tenant.file",
-      "claim": "An organization's data is its own database file, so a query cannot reach across organizations \u2014 there is no second file open to reach into.",
+      "category": "data",
+      "claim": "An organization's data is its own database file, so a query cannot reach across organizations — there is no second file open to reach into.",
       "mechanism": "One function is the only way a subsystem opens a per-organization database, and it builds the path from the organization slug. A subsystem cannot name a file outside its tenant because it never builds the path itself.",
       "status": "automated",
       "enforced": [
@@ -779,10 +792,11 @@
     },
     {
       "id": "base.tenant.key",
+      "category": "data",
       "claim": "Each database is opened under a key derived for that organization alone from one master, so a leaked key is worth one tenant instead of the estate.",
       "mechanism": "A key is derived from one master through a standard derivation function, bound to the namespace that owns it. The derivation is a pure function of its inputs, so a file reopens after a restart with nothing kept beside it, and a master of the wrong length is an error rather than a quiet fall back to no key.",
       "status": "partial",
-      "note": "Two different derivations answer to this claim and only one is per-organization. The data plane derives per organization and per user, as the claim describes. The cloud file layer derives per FILE, from a random file id \u2014 so two files of the SAME organization have unrelated keys, and the key is not a function of the organization. Per-file derivation is not weaker against a stolen file, it is stronger; it just does not support a sentence that says the key belongs to the organization.",
+      "note": "Two different derivations answer to this claim and only one is per-organization. The data plane derives per organization and per user, as the claim describes. The cloud file layer derives per FILE, from a random file id — so two files of the SAME organization have unrelated keys, and the key is not a function of the organization. Per-file derivation is not weaker against a stolen file, it is stronger; it just does not support a sentence that says the key belongs to the organization.",
       "enforced": [
         {
           "repo": "hanzoai/base",
@@ -838,6 +852,7 @@
     },
     {
       "id": "audit.request",
+      "category": "infrastructure",
       "claim": "One row records who acted, from where, the method and path, the action, the status the server returned, and the time.",
       "mechanism": "Request middleware writes one record per request from the validated principal and the response, into a table with a monotonic sequence. Credential-shaped path segments and the user agent are scrubbed before the row is written.",
       "status": "automated",
@@ -876,7 +891,7 @@
               "path": "audit/record.go"
             }
           ],
-          "detail": "There are TWO trails and they are not the same shape. This one is per request. The identity service keeps a second record type carrying organization, user, address, method, request path, action, payload, response and status \u2014 but it is written for accountable actions rather than for every request, and its address field is deliberately left empty because behind the ingress the peer address is the ingress pod, which identifies nothing while still being personal data."
+          "detail": "There are TWO trails and they are not the same shape. This one is per request. The identity service keeps a second record type carrying organization, user, address, method, request path, action, payload, response and status — but it is written for accountable actions rather than for every request, and its address field is deliberately left empty because behind the ingress the peer address is the ingress pod, which identifies nothing while still being personal data."
         }
       ],
       "maps": [
@@ -904,10 +919,11 @@
     },
     {
       "id": "audit.redaction",
+      "category": "data",
       "claim": "What the trail records is scrubbed of secrets before it is written.",
       "mechanism": "Payloads emitted with a record are walked recursively against a denylist and matching values are replaced with a marker. The request path is scrubbed of credential-shaped segments and the user agent is scrubbed, before the row is written.",
       "status": "partial",
-      "note": "A Hanzo page describes this as the request body recorded with passwords masked. No request body is captured anywhere on this path: the middleware builds a row from method, path, status and principal only, and the identity service's two writers set the payload field explicitly. Redaction is real; the body capture it is described as protecting does not happen. Nothing is leaking \u2014 the sentence is wrong, and that is the defect this entry records.",
+      "note": "A Hanzo page describes this as the request body recorded with passwords masked. No request body is captured anywhere on this path: the middleware builds a row from method, path, status and principal only, and the identity service's two writers set the payload field explicitly. Redaction is real; the body capture it is described as protecting does not happen. Nothing is leaking — the sentence is wrong, and that is the defect this entry records.",
       "enforced": [
         {
           "repo": "hanzoai/cloud",
@@ -963,8 +979,9 @@
     },
     {
       "id": "audit.reserved",
+      "category": "corporate",
       "claim": "Rows recording the platform's accountable actions are reserved: the API refuses to create, correct or delete one, so evidence cannot be forged with an invented grant or quietly trimmed of a real one.",
-      "mechanism": "One predicate names the reserved actions, and the audit surface calls it on every write verb \u2014 on create, on delete, and on update twice, for the stored row's action and for the incoming one, so a row cannot be forged by relabelling one you own.",
+      "mechanism": "One predicate names the reserved actions, and the audit surface calls it on every write verb — on create, on delete, and on update twice, for the stored row's action and for the incoming one, so a row cannot be forged by relabelling one you own.",
       "status": "automated",
       "enforced": [
         {
@@ -1049,10 +1066,11 @@
     },
     {
       "id": "audit.index",
+      "category": "infrastructure",
       "claim": "Organization, user, action and time each carry an index, so a reviewer's question is a lookup rather than a walk through the whole trail.",
       "mechanism": "The cloud audit table declares real indexes on organization with sequence, action with sequence, result with sequence, and timestamp.",
       "status": "partial",
-      "note": "Partial on two counts, both measured rather than reasoned. First, the cloud trail indexes organization, action and time but NOT user \u2014 so of the four questions named, 'everything one person did' is the one that still walks the table. Second, the identity service's record declares index tags on organization, user, action and time and they are INERT: the tag parser reads only two directives and index is not one of them, and that backend stores every entity as a JSON payload in a single shared table with indexes on kind, parent and deleted alone. The declaration exists; on this backend it materializes nothing.",
+      "note": "Partial on two counts, both measured rather than reasoned. First, the cloud trail indexes organization, action and time but NOT user — so of the four questions named, 'everything one person did' is the one that still walks the table. Second, the identity service's record declares index tags on organization, user, action and time and they are INERT: the tag parser reads only two directives and index is not one of them, and that backend stores every entity as a JSON payload in a single shared table with indexes on kind, parent and deleted alone. The declaration exists; on this backend it materializes nothing.",
       "enforced": [
         {
           "repo": "hanzoai/cloud",
@@ -1104,6 +1122,7 @@
     },
     {
       "id": "audit.chain",
+      "category": "infrastructure",
       "claim": "Each record carries the previous record's hash and its own, so a row removed or altered after the fact is detectable rather than silent.",
       "mechanism": "Records are appended over a monotonic sequence, each carrying the prior hash, and an endpoint walks the chain and reports where it breaks. The store issues no update and no delete.",
       "status": "automated",
@@ -1174,6 +1193,7 @@
     },
     {
       "id": "privacy.consent",
+      "category": "data",
       "claim": "A member's training-consent answer is recorded in the trail as a row the organization cannot author, alter or remove.",
       "mechanism": "The consent endpoint writes a row carrying the before and after state under a reserved action, inside the same transaction as the change itself, so the record and the change land together or not at all.",
       "status": "automated",
@@ -1238,6 +1258,7 @@
     },
     {
       "id": "kms.signing.handle",
+      "category": "data",
       "claim": "The signing interface takes a key id and some bytes and returns a signature. The private key is made inside an external module and stays there, so there is no moment when it exists in our process to be logged, leaked or written into a crash dump.",
       "mechanism": "None found. Signing keys are held as strings on the identity service's own records and parsed in the running binary to build a signer. The cloud key service is embedded in the binary, with a master key read from the environment.",
       "status": "absent",
@@ -1301,10 +1322,11 @@
     },
     {
       "id": "crypto.validation",
+      "category": "data",
       "claim": "The cryptographic modules this platform runs hold an independent validation.",
       "mechanism": "None. The code implements published standards, the lattice-based key-encapsulation and signature schemes among them. Implementing a standard is not the same as holding a validation, and a validation belongs to the vendor of a module rather than to the software that calls it.",
       "status": "absent",
-      "note": "Carried so the gap is counted rather than omitted. There is nothing to read here \u2014 no certificate exists to point at \u2014 so this entry rests on a reading of what is absent rather than on anything that could fail. Where a deployment needs validated modules, that is a question about which module signs, and it is answered by kms.signing.handle, which is itself absent.",
+      "note": "Carried so the gap is counted rather than omitted. There is nothing to read here — no certificate exists to point at — so this entry rests on a reading of what is absent rather than on anything that could fail. Where a deployment needs validated modules, that is a question about which module signs, and it is answered by kms.signing.handle, which is itself absent.",
       "enforced": [
         {
           "repo": "hanzoai/iam",

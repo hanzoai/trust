@@ -82,20 +82,26 @@ export interface Inventory {
 }
 
 // How the controls themselves stand, independent of any framework.
-export function inventory(): Inventory {
+//
+// The list is a PARAMETER, defaulting to the inventory compiled into this
+// bundle. That is what lets one fold serve two callers without a second
+// implementation: the deployment's own controls are the compiled-in baseline,
+// and a tenant's are rows it authored. The arithmetic cannot differ between
+// them, because there is only one copy of it.
+export function inventory(cs: Control[] = CONTROLS): Inventory {
   let automated = 0;
   let partial = 0;
   let absent = 0;
   let unverified = 0;
-  for (let i = 0; i < CONTROLS.length; i++) {
-    const c = CONTROLS[i];
+  for (let i = 0; i < cs.length; i++) {
+    const c = cs[i];
     if (c.status === "automated") automated++;
     else if (c.status === "partial") partial++;
     else absent++;
     if (!verified(c)) unverified++;
   }
   return {
-    total: CONTROLS.length,
+    total: cs.length,
     automated,
     partial,
     absent,
@@ -103,7 +109,7 @@ export function inventory(): Inventory {
     statement:
       automated +
       " of " +
-      CONTROLS.length +
+      cs.length +
       " controls automated, " +
       partial +
       " partial, " +
@@ -113,13 +119,13 @@ export function inventory(): Inventory {
   };
 }
 
-function coverClause(clause: Clause, id: string): ClauseCoverage {
+function coverClause(clause: Clause, id: string, cs: Control[]): ClauseCoverage {
   let level: Level = "none";
   const hits: { id: string; rank: number }[] = [];
 
   const ref = id + ":" + clause.id;
-  for (let i = 0; i < CONTROLS.length; i++) {
-    const c = CONTROLS[i];
+  for (let i = 0; i < cs.length; i++) {
+    const c = cs[i];
     for (let j = 0; j < c.maps.length; j++) {
       const m = c.maps[j];
       if (m.clause !== ref) continue;
@@ -141,11 +147,11 @@ function coverClause(clause: Clause, id: string): ClauseCoverage {
   return out;
 }
 
-function summarize(id: string, f: Framework): Detail {
+function summarize(id: string, f: Framework, cs: Control[]): Detail {
   const clauses: ClauseCoverage[] = [];
   const tally: Tally = { total: f.clauses.length, automated: 0, partial: 0, none: 0 };
   for (let i = 0; i < f.clauses.length; i++) {
-    const cc = coverClause(f.clauses[i], id);
+    const cc = coverClause(f.clauses[i], id, cs);
     clauses.push(cc);
     tally[cc.level]++;
   }
@@ -179,17 +185,17 @@ function summarize(id: string, f: Framework): Detail {
 
 // One framework, every clause listed. Null for a framework we do not map to —
 // an empty answer, never a throw: asking about one is a fair question.
-export function framework(id: string): Detail | null {
+export function framework(id: string, cs: Control[] = CONTROLS): Detail | null {
   const f = lookup(id);
-  return f ? summarize(id, f) : null;
+  return f ? summarize(id, f, cs) : null;
 }
 
 // Every framework's counts, without the clause lists. This is what a badge reads.
-export function summary(): { controls: Inventory; frameworks: Coverage[] } {
+export function summary(cs: Control[] = CONTROLS): { controls: Inventory; frameworks: Coverage[] } {
   const list = ids();
   const out: Coverage[] = [];
   for (let i = 0; i < list.length; i++) {
-    const d = summarize(list[i], lookup(list[i]) as Framework);
+    const d = summarize(list[i], lookup(list[i]) as Framework, cs);
     const row: Coverage = {
       framework: d.framework,
       name: d.name,
@@ -206,5 +212,5 @@ export function summary(): { controls: Inventory; frameworks: Coverage[] } {
     if (d.note) row.note = d.note;
     out.push(row);
   }
-  return { controls: inventory(), frameworks: out };
+  return { controls: inventory(cs), frameworks: out };
 }

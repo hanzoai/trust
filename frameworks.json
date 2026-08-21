@@ -1,5 +1,5 @@
 {
-  "$comment": "Framework clause catalogs. Reference data: the published clause lists, verbatim in id and title, with no Hanzo judgement in them. They are the DENOMINATOR of every coverage number — a control in controls.json may only map to an id that appears here, which is what makes a typo a build failure instead of a silently uncounted clause. Nothing here asserts that Hanzo holds a certification, and no field in this file can express one.",
+  "$comment": "Framework clause catalogs. Reference data: the published clause lists, verbatim in id and title, with no Hanzo judgement in them. They are the DENOMINATOR of every coverage number — a control in controls.json may only map to an id that appears here, which is what makes a typo a build failure instead of a silently uncounted clause. Every field here describes a published clause, so coverage against that list is the only thing this file can say.",
   "soc2": {
     "name": "SOC 2 Trust Services Criteria",
     "edition": "2017, with the 2022 revised points of focus",

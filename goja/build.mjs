@@ -106,6 +106,13 @@ export async function build({ write = true, controls, frameworks } = {}) {
     target: "es2015",
     platform: "neutral",
     legalComments: "none",
+    // The bundle is a TRACKED artifact, so it is read by the same copy gate every
+    // hand-written surface is, and that gate is LINE-SCOPED. Printed as one line,
+    // 174 clause titles and three notes all share it with every framework name,
+    // so ISO A.5.30 "ICT readiness for business continuity" reads as a hedge
+    // beside "SOC 2". Wrapping restores the scoping the gate assumes, and makes
+    // a 64 KB inventory diffable in git, which is the repo's whole premise.
+    lineLimit: 100,
     define: {
       // The file is an envelope — "$comment" beside the list — so the LIST is
       // what gets inlined. Handing the envelope to a bundle that indexes an

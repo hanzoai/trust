@@ -57,7 +57,7 @@ goja/
     host.ts        __now, __audit
     reply.ts       Ctx, Res, and the answers
     index.ts       dispatch
-  test/            95 cases over the BUILT artifact in a bare node:vm
+  test/            104 cases over the BUILT artifact in a bare node:vm
 site/              the page — a Next static export that reads the published door
 ```
 

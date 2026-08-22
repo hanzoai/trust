@@ -1,6 +1,6 @@
 'use client';
 
-import { Grid } from '@hanzo/ui/primitives/Grid';
+import { Grid } from '@hanzo/ui/grid';
 import { H1 } from '@hanzo/ui/primitives/H1';
 import { Paragraph } from '@hanzo/ui/primitives/Paragraph';
 import { Text } from '@hanzo/ui/primitives/Text';
@@ -50,7 +50,7 @@ export function Overview({ center }: { center: Center }) {
         </Text>
       </YStack>
 
-      <Grid min={128} max={5} gap={12}>
+      <Grid columns={{ min: 128, max: 5 }} gap={12}>
         {tiles.map((t) => (
           <YStack key={t.label} gap="$1" p="$4" rounded={24} borderWidth={1} borderColor="$borderColor" bg="$color1">
             <Text fontSize="$9" fontWeight="700" color={LOUD} className="hz-tnum">

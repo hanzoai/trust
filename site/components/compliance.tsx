@@ -5,7 +5,7 @@ import { CardContent } from '@hanzo/ui/primitives/CardContent';
 import { CardDescription } from '@hanzo/ui/primitives/CardDescription';
 import { CardHeader } from '@hanzo/ui/primitives/CardHeader';
 import { CardTitle } from '@hanzo/ui/primitives/CardTitle';
-import { Grid } from '@hanzo/ui/primitives/Grid';
+import { Grid } from '@hanzo/ui/grid';
 import { Text } from '@hanzo/ui/primitives/Text';
 import { XStack } from '@hanzo/ui/primitives/XStack';
 import { YStack } from '@hanzo/ui/primitives/YStack';
@@ -26,7 +26,7 @@ export function Compliance({ coverage }: { coverage: Coverage[] }) {
   if (coverage.length === 0) return <Nothing>No framework coverage is published.</Nothing>;
 
   return (
-    <Grid min={320} max={2} gap={16}>
+    <Grid columns={{ min: 320, max: 2 }} gap={16}>
       {coverage.map((c) => (
         <Card key={c.framework} rounded={24} gap="$4" bg="$color1">
           <CardHeader gap="$1">

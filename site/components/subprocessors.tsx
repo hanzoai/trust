@@ -8,7 +8,7 @@ import { CardContent } from '@hanzo/ui/primitives/CardContent';
 import { CardFooter } from '@hanzo/ui/primitives/CardFooter';
 import { CardHeader } from '@hanzo/ui/primitives/CardHeader';
 import { CardTitle } from '@hanzo/ui/primitives/CardTitle';
-import { Grid } from '@hanzo/ui/primitives/Grid';
+import { Grid } from '@hanzo/ui/grid';
 import { Paragraph } from '@hanzo/ui/primitives/Paragraph';
 import { Text } from '@hanzo/ui/primitives/Text';
 import { XStack } from '@hanzo/ui/primitives/XStack';
@@ -96,7 +96,7 @@ export function Subprocessors({ rows }: { rows: Subprocessor[] }) {
       {shown.length === 0 ? (
         <Nothing>Nothing is published in that group.</Nothing>
       ) : (
-        <Grid min={340} max={2} gap={16}>
+        <Grid columns={{ min: 340, max: 2 }} gap={16}>
           {shown.map((s) => {
             const seen = open.has(s.id);
             return (

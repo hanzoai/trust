@@ -11,7 +11,7 @@
   "dependencies": {
     "@hanzo/gui": "8.1.1",
     "@hanzo/logo": "^1.0.20",
-    "@hanzo/ui": "8.1.6",
+    "@hanzo/ui": "8.2.0",
     "@hanzogui/config": "8.1.1",
     "@hanzogui/lucide-icons-2": "8.1.1",
     "@hanzogui/next-theme": "8.1.1",

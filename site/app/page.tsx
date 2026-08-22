@@ -4,7 +4,7 @@ import { useEffect, useState, type ReactNode } from 'react';
 import { Activity, Bell, FileText, HelpCircle, Layers, Lock, ScrollText, ShieldCheck, Users } from '@hanzogui/lucide-icons-2';
 import { Anchor } from '@hanzo/ui/primitives/Anchor';
 import { Button } from '@hanzo/ui/primitives/Button';
-import { Grid } from '@hanzo/ui/primitives/Grid';
+import { Grid } from '@hanzo/ui/grid';
 import { H2 } from '@hanzo/ui/primitives/H2';
 import { Paragraph } from '@hanzo/ui/primitives/Paragraph';
 import { Section } from '@hanzo/ui/primitives/Section';
@@ -163,12 +163,12 @@ function Waiting() {
           <Skeleton height={44} width={280} rounded={12} />
           <Skeleton.Text lines={2} />
         </YStack>
-        <Grid min={128} max={5} gap={12}>
+        <Grid columns={{ min: 128, max: 5 }} gap={12}>
           {[0, 1, 2, 3, 4].map((n) => (
             <Skeleton key={n} height={96} rounded={24} />
           ))}
         </Grid>
-        <Grid min={320} max={2} gap={16}>
+        <Grid columns={{ min: 320, max: 2 }} gap={16}>
           {[0, 1, 2, 3].map((n) => (
             <Skeleton key={n} height={180} rounded={24} />
           ))}

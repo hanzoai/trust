@@ -1,0 +1,219 @@
+{
+  "$comment": "Who else touches the data. `role` is the whole point of the file: a PROCESSOR receives or can reach customer data, a VENDOR is a party we buy from that no customer data reaches. The distinction is a judgement, so it is made once, in writing, beside the evidence it rests on — every entry names the repository and file where the relationship is declared, or the origin a browser contacts, and `bin/surface` refuses a third-party origin on a Hanzo surface that no entry here declares. Advertising bought on a platform is a purchase, not a flow; a font served from our own origin is not a flow either. Naming a party is not the same fact as naming which of our models it serves, and this file states the first and never the second.",
+  "subprocessors": [
+    {
+      "id": "digitalocean",
+      "name": "DigitalOcean",
+      "role": "processor",
+      "mark": "digitalocean",
+      "purpose": "The infrastructure everything runs on: the Kubernetes clusters, the block volumes each database lives on, and the load balancers that terminate traffic. Separately, the inference endpoint that serves embeddings, images, video and reranking.",
+      "data": "Everything. Every request reaches a process on their compute, and every byte we store at rest sits on their volumes, so there is no customer record that is not on their hardware. The inference endpoint additionally receives the text or image sent to it.",
+      "location": "United States (sfo3), on the operator's global footprint",
+      "url": "https://www.digitalocean.com",
+      "terms": "https://www.digitalocean.com/legal/data-processing-agreement",
+      "evidence": [
+        { "repo": "hanzoai/universe", "path": "infra/terraform/main.tf", "note": "the provider, the network, the firewall and the nodes are declared here" },
+        { "repo": "hanzoai/universe", "path": "infra/k8s/ingress/service.yaml", "note": "the load balancer that terminates public traffic" },
+        { "repo": "hanzoai/universe", "path": "charts/app/values/hanzo/cloud.yaml", "note": "the inference endpoint and the key that reaches it" }
+      ]
+    },
+    {
+      "id": "cloudflare",
+      "name": "Cloudflare",
+      "role": "processor",
+      "mark": "cloudflare",
+      "purpose": "Authoritative DNS for every zone, and the reverse proxy in front of the hosts marked proxied — which means they terminate TLS for those and see the request in the clear. A worker sits in the analytics path, the sign-in pages are served from their hosting, and aggregate mail reports are addressed to them.",
+      "data": "For a proxied host: the whole request. The visitor's address, the URL, the headers, the body, and the response. Their page-timing script is served to hanzo.ai and reports that visitor's page views back to them.",
+      "location": "United States, served from the operator's global edge",
+      "url": "https://www.cloudflare.com",
+      "terms": "https://www.cloudflare.com/cloudflare-customer-dpa/",
+      "evidence": [
+        { "repo": "hanzoai/universe", "path": "infra/cf-zones/hanzo-ai.yaml", "note": "the zone, the records marked proxied, and the address aggregate mail reports go to" },
+        { "repo": "hanzoai/universe", "path": "workers/analytics-proxy/worker.js", "note": "a worker in the request path of every analytics beacon" },
+        { "repo": "hanzoai/universe", "path": "charts/app/values/hanzo/tabs.yaml", "note": "records that the page-timing script is inserted at the edge rather than by us, so it appears in no page we build" },
+        { "origin": "static.cloudflareinsights.com", "note": "the page-timing script. Inserted into every hanzo.ai host; only the surfaces whose enforced policy omits it refuse to run it" }
+      ]
+    },
+    {
+      "id": "openrouter",
+      "name": "OpenRouter",
+      "role": "processor",
+      "mark": "openrouter",
+      "purpose": "Model inference. The route most text and vision requests take.",
+      "data": "The prompt as sent, including whatever a customer put in it, and the completion returned. They route onward to the operator that runs the model, so a prompt reaching them may reach that operator too.",
+      "location": "United States",
+      "url": "https://openrouter.ai",
+      "terms": "https://openrouter.ai/terms",
+      "evidence": [
+        { "repo": "hanzoai/universe", "path": "charts/app/values/hanzo/cloud.yaml", "note": "the endpoint and the key" },
+        { "repo": "hanzoai/universe", "path": "charts/app/values/enso/enso.yaml", "note": "the same endpoint declared for the router" }
+      ]
+    },
+    {
+      "id": "fireworks",
+      "name": "Fireworks AI",
+      "role": "processor",
+      "purpose": "The embedder behind the knowledge store — it turns a document into the vector the store is searched by.",
+      "data": "The text of every document ingested into a knowledge store, and the text of every query run against one. This is the widest document flow on this list and it is worth reading twice: a file a customer uploads for retrieval is sent here in full.",
+      "location": "United States",
+      "url": "https://fireworks.ai",
+      "terms": "https://fireworks.ai/terms-of-service",
+      "evidence": [
+        { "repo": "hanzoai/universe", "path": "charts/app/values/hanzo/cloud.yaml", "note": "the embedding endpoint, the model and the key reference" }
+      ]
+    },
+    {
+      "id": "openai",
+      "name": "OpenAI",
+      "role": "processor",
+      "purpose": "Model inference, on a key we hold.",
+      "data": "The prompt sent to a model they serve, and the completion returned.",
+      "location": "United States",
+      "url": "https://openai.com",
+      "terms": "https://openai.com/policies/data-processing-addendum",
+      "evidence": [
+        { "repo": "hanzoai/universe", "path": "charts/app/values/hanzo/cloud.yaml", "note": "the key, held in the shared model-key secret" }
+      ]
+    },
+    {
+      "id": "anthropic",
+      "name": "Anthropic",
+      "role": "processor",
+      "mark": "anthropic",
+      "purpose": "Model inference, on a key we hold.",
+      "data": "The prompt sent to a model they serve, and the completion returned.",
+      "location": "United States",
+      "url": "https://www.anthropic.com",
+      "terms": "https://www.anthropic.com/legal/commercial-terms",
+      "evidence": [
+        { "repo": "hanzoai/universe", "path": "charts/app/values/hanzo/cloud.yaml", "note": "the key, held in the shared model-key secret" }
+      ]
+    },
+    {
+      "id": "deepseek",
+      "name": "DeepSeek",
+      "role": "processor",
+      "mark": "deepseek",
+      "purpose": "Model inference, on a key we hold.",
+      "data": "The prompt sent to a model they serve, and the completion returned.",
+      "location": "China",
+      "url": "https://www.deepseek.com",
+      "terms": "https://platform.deepseek.com/downloads/DeepSeek%20Open%20Platform%20Terms%20of%20Service.html",
+      "evidence": [
+        { "repo": "hanzoai/universe", "path": "cloud/src/providers.rs", "note": "the endpoint" }
+      ]
+    },
+    {
+      "id": "twilio",
+      "name": "Twilio",
+      "role": "processor",
+      "purpose": "Message delivery — text, voice and chat through the messaging interface, and mail through the mail interface. One party, two products.",
+      "data": "The recipient's number or address, and the body of the message sent to them.",
+      "location": "United States",
+      "url": "https://www.twilio.com",
+      "terms": "https://www.twilio.com/en-us/legal/data-protection-addendum",
+      "evidence": [
+        { "repo": "hanzoai/cloud", "path": "apps/notify/twilio.go", "symbol": "register", "note": "one party registered as two providers, and the credentials each reads" },
+        { "repo": "hanzoai/universe", "path": "charts/app/values/hanzo/iam.yaml", "note": "records that the credentials are held per organization in the key store rather than as a deployment secret" }
+      ]
+    },
+    {
+      "id": "google",
+      "name": "Google",
+      "role": "processor",
+      "mark": "google",
+      "purpose": "Two unrelated things. Signing in with a Google account, which is a customer's own choice at the sign-in page. And the mail exchange for our own domains, which is where a message a customer sends us arrives.",
+      "data": "For sign-in: the account identifier and the profile fields that flow back with it. For mail: any message a customer addresses to us, in full.",
+      "location": "United States",
+      "url": "https://workspace.google.com",
+      "terms": "https://cloud.google.com/terms/data-processing-addendum",
+      "evidence": [
+        { "repo": "hanzoai/universe", "path": "infra/k8s/kms-canonical-crs/hanzo/google-oauth-kms-sync.yaml", "note": "the sign-in credentials" },
+        { "repo": "hanzoai/universe", "path": "infra/cf-zones/hanzo-ai.yaml", "note": "the mail exchange records for the zone" }
+      ]
+    },
+    {
+      "id": "github",
+      "name": "GitHub",
+      "role": "processor",
+      "mark": "github",
+      "purpose": "Signing in with a GitHub account, and reading the repository a customer asks us to build. The public mirror of our own source is a different relationship and no customer data is in it.",
+      "data": "For sign-in: the account identifier and the profile fields that flow back. For a build: the contents of the repository a customer connected, read with a token scoped to what they installed us on.",
+      "location": "United States",
+      "url": "https://github.com",
+      "terms": "https://github.com/customer-terms/github-data-protection-agreement",
+      "evidence": [
+        { "repo": "hanzoai/universe", "path": "infra/k8s/kms-canonical-crs/hanzo/github-oauth-kms-sync.yaml", "note": "the sign-in credentials" },
+        { "repo": "hanzoai/universe", "path": "infra/k8s/hanzo-build/ghcr-renew.yaml", "note": "the installation token minted to read a connected repository" }
+      ]
+    },
+    {
+      "id": "square",
+      "name": "Square",
+      "role": "processor",
+      "mark": "square",
+      "purpose": "Taking payment. The card is entered into a frame they serve, so the number itself goes from the browser to them and never through us.",
+      "data": "The buyer's identity and the amount. The card number reaches them directly and does not reach us at any point.",
+      "location": "United States",
+      "url": "https://squareup.com",
+      "terms": "https://squareup.com/legal/general/dpa",
+      "evidence": [
+        { "repo": "hanzoai/universe", "path": "charts/app/values/hanzo/pay.yaml", "note": "the origins the checkout page is permitted to reach" },
+        { "repo": "hanzoai/cloud", "path": "apps/integrations/payments.go", "note": "the endpoint" }
+      ]
+    },
+    {
+      "id": "slack",
+      "name": "Slack",
+      "role": "processor",
+      "purpose": "Where operational alerts are posted, and the app a customer can install into their own workspace.",
+      "data": "The text of an alert, which names a service and a condition. For an installed app, whatever the customer's own workspace sends it.",
+      "location": "United States",
+      "url": "https://slack.com",
+      "terms": "https://slack.com/trust/data-management/data-processing-addendum",
+      "evidence": [
+        { "repo": "hanzoai/universe", "path": "infra/k8s/kms-canonical-crs/hanzo/cloud-slack-kms-sync.yaml", "note": "the app credentials and the signing secret" },
+        { "repo": "hanzoai/universe", "path": "charts/app/values/hanzo/cloud.yaml", "note": "the channel alerts are addressed to" }
+      ]
+    },
+    {
+      "id": "amazon",
+      "name": "Amazon Web Services",
+      "role": "vendor",
+      "purpose": "Named in configuration and not used. Their command-line tool is the client we run against our OWN object store, and the region string beside it is a value that client requires rather than a place anything is stored. The managed-model endpoint is written down and left switched off.",
+      "data": "None. Every bucket those commands address resolves inside the cluster, and the model endpoint is commented out rather than configured.",
+      "location": "Not applicable",
+      "url": "https://aws.amazon.com",
+      "evidence": [
+        { "repo": "hanzoai/universe", "path": "infra/k8s/git/create-bucket-job.yaml", "note": "the tool, run against the in-cluster store" },
+        { "repo": "hanzoai/universe", "path": "charts/app/values/enso/enso.yaml", "note": "the managed-model endpoint, commented out and marked as waiting on credentials" }
+      ]
+    },
+    {
+      "id": "googleads",
+      "name": "Google Ads",
+      "role": "vendor",
+      "mark": "googleads",
+      "purpose": "Advertising we buy. Buying an advertisement is a purchase from a platform, not a route data travels.",
+      "data": "None. No script of theirs is served by any Hanzo surface, no identifier is shared with them, and nothing about a visitor to our sites reaches them. `bin/surface` is what keeps that true rather than remembered.",
+      "location": "Not applicable",
+      "url": "https://ads.google.com",
+      "evidence": [
+        { "repo": "hanzoai/trust", "path": "bin/surface.mjs", "note": "refuses the build if a measurement tag of theirs is ever reached from a Hanzo surface" }
+      ]
+    },
+    {
+      "id": "meta",
+      "name": "Meta",
+      "role": "vendor",
+      "mark": "meta",
+      "purpose": "Advertising we buy. Same relationship as the platform above and the same boundary.",
+      "data": "None. No script of theirs is served by any Hanzo surface, and no visitor event is sent to them.",
+      "location": "Not applicable",
+      "url": "https://www.facebook.com/business",
+      "evidence": [
+        { "repo": "hanzoai/trust", "path": "bin/surface.mjs", "note": "refuses the build if their tag is ever reached from a Hanzo surface" }
+      ]
+    }
+  ]
+}

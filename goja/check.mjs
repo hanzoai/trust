@@ -1,6 +1,6 @@
-// The gatekeeper for controls.json and frameworks.json.
+// The gatekeeper for controls.json, frameworks.json and subprocessors.json.
 //
-// Pure ESM, no dependencies, no I/O — it takes two parsed values and returns the
+// Pure ESM, no dependencies, no I/O — it takes the parsed values and returns the
 // list of things wrong with them. `build.mjs` runs it before esbuild, so a
 // malformed entry means there is NO bundle. That ordering is the whole point:
 // the failure mode we refuse to have is an inventory that parses, scores, and
@@ -74,7 +74,12 @@ function checkPlace(place, where, problems) {
   }
   if (!isStr(place.repo)) problems.push(`${where}: repo is required`);
   if (!isStr(place.path)) problems.push(`${where}: path is required`);
-  else if (/^[/.]|\s/.test(place.path)) {
+  else if (/^\//.test(place.path) || /\s/.test(place.path) || /(^|\/)\.\.?(\/|$)/.test(place.path)) {
+    // Repo-relative, and it must stay inside the repo: no leading slash, no
+    // whitespace, and no `.` or `..` SEGMENT. A leading dot is only a traversal
+    // when the whole segment is one — `.hanzo/workflows/build.yml` is an
+    // ordinary path, and the rule that refused it refused every hidden
+    // directory in the estate, which is where a repo keeps its pipeline.
     problems.push(`${where}: path must be repo-relative with no spaces (got "${place.path}")`);
   }
   if (place.line !== undefined && (!Number.isInteger(place.line) || place.line < 1)) {
@@ -234,13 +239,125 @@ export function checkControls(input, clauseIndex) {
   return problems;
 }
 
-export function check(controls, frameworks) {
-  const [problems, index] = checkFrameworks(frameworks);
-  return problems.concat(checkControls(controls, index));
+// Who else touches the data. ONE judgement per entry, and the schema is built so
+// that judgement cannot be left implied:
+//
+//   processor  receives or can reach customer data. It must say WHAT it receives,
+//              WHERE it is, and under WHICH terms — the three things a reviewer
+//              asks — so a party cannot be listed without answering them.
+//   vendor     a party we buy from that no customer data reaches. It must still
+//              say what it receives, because "none, and here is why" is the
+//              claim being made and an empty field is not that claim.
+//
+// A role is REQUIRED and closed. There is no default, deliberately: guessing on
+// behalf of whoever added the row is how an inference endpoint ends up filed
+// beside an advertising account.
+const ROLES = ["processor", "vendor"];
+
+// A slug — the id, and the mark that shares its namespace.
+const SLUG = /^[a-z0-9]+(-[a-z0-9]+)*$/;
+
+// One piece of evidence is EITHER a place in a repository — the same shape a
+// control's `enforced` takes, so a reader who can open one can open the other —
+// OR an origin a browser contacts. The second kind is what `bin/surface`
+// resolves against what our pages actually reach, which is what stops the list
+// going stale on its own.
+function checkEvidence(e, where, problems) {
+  if (!e || typeof e !== "object") {
+    problems.push(`${where}: not an object`);
+    return;
+  }
+  const origin = typeof e.origin === "string" ? e.origin.trim() : "";
+  if (origin) {
+    if (!/^[a-z0-9]([-a-z0-9.]*[a-z0-9])?$/.test(origin) || origin.indexOf(".") < 0) {
+      problems.push(`${where}: origin must be a bare hostname (got "${e.origin}")`);
+    }
+    if (e.repo !== undefined || e.path !== undefined) {
+      problems.push(`${where}: an origin and a repository path are two kinds of evidence, not one entry`);
+    }
+    return;
+  }
+  checkPlace(e, where, problems);
 }
 
-export function assertValid(controls, frameworks) {
-  const problems = check(controls, frameworks);
+export function checkSubprocessors(input) {
+  const problems = [];
+  const rows = Array.isArray(input) ? input : input && input.subprocessors;
+  if (!Array.isArray(rows)) {
+    return ["subprocessors.json: expected a list of parties, or an envelope holding one"];
+  }
+
+  const seen = new Set();
+  for (let i = 0; i < rows.length; i++) {
+    const s = rows[i];
+    const at = `subprocessors.json[${(s && s.id) || i}]`;
+    if (!s || typeof s !== "object") {
+      problems.push(`${at}: not an object`);
+      continue;
+    }
+
+    if (!isStr(s.id)) problems.push(`${at}: id is required`);
+    else if (!SLUG.test(s.id)) problems.push(`${at}: id must be a lowercase slug, e.g. digitalocean`);
+    else if (seen.has(s.id)) problems.push(`${at}: duplicate id`);
+    if (isStr(s.id)) seen.add(s.id);
+
+    if (!isStr(s.name)) problems.push(`${at}: name is required`);
+    if (!isStr(s.purpose)) problems.push(`${at}: purpose is required — why this party is here`);
+    // The one field that carries the classification. A party listed without it
+    // is a name on a page, which is the thing this file exists instead of.
+    if (!isStr(s.data)) {
+      problems.push(`${at}: data is required — what customer data reaches this party, or that none does and why`);
+    }
+    if (s.mark !== undefined && (!isStr(s.mark) || !SLUG.test(s.mark))) {
+      problems.push(`${at}: mark must be a lowercase slug naming a canonical mark`);
+    }
+    if (s.url !== undefined && !isStr(s.url)) problems.push(`${at}: url must be a non-empty string when present`);
+
+    if (ROLES.indexOf(s.role) < 0) {
+      problems.push(`${at}: role must be one of ${ROLES.join(", ")}`);
+    } else if (s.role === "processor") {
+      // The three a reviewer asks of a party that holds their data. Made
+      // structural rather than conventional: there is no way to file one of
+      // these without answering all three.
+      if (!isStr(s.location)) {
+        problems.push(`${at}: a processor must state where it is — the data goes there`);
+      }
+      if (!isStr(s.terms)) {
+        problems.push(`${at}: a processor must name the terms it processes under`);
+      }
+    }
+
+    if (!isArr(s.evidence)) {
+      problems.push(`${at}: evidence must name at least one place or origin`);
+    } else {
+      s.evidence.forEach((e, n) => checkEvidence(e, `${at}.evidence[${n}]`, problems));
+    }
+
+    // The same ban a control is held to. A party's own marketing is the single
+    // likeliest place a certificate claim gets copied into this repository, and
+    // repeating one is making it.
+    const text = prose(s);
+    for (const re of CLAIMS) {
+      const hit = re.exec(text);
+      if (hit) problems.push(`${at}: prose claims "${hit[0]}" — this repo does not restate another party's status`);
+    }
+    for (const re of FRAMEWORK_WORDS) {
+      const hit = re.exec(text);
+      if (hit) problems.push(`${at}: prose names "${hit[0]}" — a framework belongs in maps, where it carries a number`);
+    }
+  }
+  return problems;
+}
+
+export function check(controls, frameworks, subprocessors) {
+  const [problems, index] = checkFrameworks(frameworks);
+  return problems
+    .concat(checkControls(controls, index))
+    .concat(subprocessors === undefined ? [] : checkSubprocessors(subprocessors));
+}
+
+export function assertValid(controls, frameworks, subprocessors) {
+  const problems = check(controls, frameworks, subprocessors);
   if (problems.length) {
     throw new Error(
       `trust: the inventory is malformed, so no bundle was built (${problems.length}):\n  ` +

@@ -103,14 +103,32 @@ export type Doc = {
   released: boolean;
 };
 
+/**
+ * A party this organization sends data to, or buys from.
+ *
+ * `role` is the disclosure and `data` is what it stands for: a processor
+ * receives or can reach customer data and says what; a vendor is a party we buy
+ * from that no customer data reaches, and says that in words rather than by
+ * leaving the field out. Both are required by the API, so neither is optional
+ * here — a row that reaches this page has answered.
+ */
+export type Role = 'processor' | 'vendor';
+
+/** Where the relationship is declared, or the host a browser reaches it at. */
+export type Trace = { repo?: string; path?: string; symbol?: string; origin?: string; note?: string };
+
 export type Subprocessor = {
   id: string;
   name: string;
+  role: Role;
   purpose: string;
+  data: string;
   location?: string;
   url?: string;
-  dpa?: string;
-  updated: number;
+  terms?: string;
+  mark?: string;
+  evidence: Trace[];
+  updated?: number;
 };
 
 export type Policy = { id: string; title: string; summary?: string; href?: string; updated: number };

@@ -98,10 +98,14 @@ export function version() {
 //
 // Validation runs either way. A synthetic inventory that would not be allowed
 // in the repo is not allowed in a test either.
-export async function build({ write = true, controls, frameworks } = {}) {
+export async function build({ write = true, controls, frameworks, subprocessors } = {}) {
   controls = normalize(controls || read("controls.json"));
   frameworks = frameworks || read("frameworks.json");
-  assertValid(controls, frameworks);
+  // The envelope again — `{ $comment, subprocessors }` — read once, here, so
+  // everything downstream sees a list.
+  const parties = subprocessors || read("subprocessors.json");
+  subprocessors = Array.isArray(parties) ? parties : parties.subprocessors;
+  assertValid(controls, frameworks, subprocessors);
 
   const out = await esbuild({
     entryPoints: [join(here, "src/index.ts")],
@@ -124,6 +128,7 @@ export async function build({ write = true, controls, frameworks } = {}) {
       // would come back zero and nothing would say why.
       __CONTROLS__: JSON.stringify(controls),
       __FRAMEWORKS__: JSON.stringify(frameworks),
+      __SUBPROCESSORS__: JSON.stringify(subprocessors),
       __VERSION__: JSON.stringify(version()),
     },
     banner: {

@@ -23,7 +23,7 @@
 // same document with every gated artifact reduced to the fact that it exists.
 // Neither door serves bytes.
 
-import { documents, section, single, controls as own, remove, write } from "./center";
+import { documents, parties, section, single, controls as own, remove, write } from "./center";
 import { framework, summary } from "./coverage";
 import { query as evidence } from "./evidence";
 import { now } from "./host";
@@ -84,7 +84,7 @@ function center(org: string, grant: boolean): Record<string, unknown> {
     inventory: s.controls,
     frameworks: frameworks(),
     documents: documents(grant),
-    subprocessors: section("subprocessor"),
+    subprocessors: parties(),
     policies: section("policy"),
     faq: section("faq"),
     updates: section("update"),
@@ -136,7 +136,7 @@ const routes: Record<string, Handler> = {
   },
 
   "documents.list": () => ok({ documents: documents(true) }),
-  "subprocessors.list": () => ok({ subprocessors: section("subprocessor") }),
+  "subprocessors.list": () => ok({ subprocessors: parties() }),
   "policies.list": () => ok({ policies: section("policy") }),
   "faq.list": () => ok({ faq: section("faq") }),
   "updates.list": () => ok({ updates: section("update") }),

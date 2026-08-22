@@ -1357,6 +1357,632 @@
           "strength": "partial"
         }
       ]
+    },
+    {
+      "id": "ci.claim.copy",
+      "category": "product",
+      "claim": "No page we publish can say we hold a credential an outside party would have to grant.",
+      "mechanism": "A gate reads every tracked page and refuses a line that names a published standard beside a word asserting we hold something under it, and refuses a hedge about a future assessment on the same line. It runs before anything is built, so a page that says it never reaches a reader.",
+      "status": "partial",
+      "note": "Partial for scope, not for quality. The gate itself refuses on the spot and the run stops. What is unestablished is its reach: it runs wherever a repository calls the shared pipeline, and the sweep that would say which repositories ought to and do not has not been done, so the honest word is the narrower one.",
+      "enforced": [
+        {
+          "repo": "hanzoai/ci",
+          "path": "bin/certclaims"
+        },
+        {
+          "repo": "hanzoai/ci",
+          "path": ".hanzo/workflows/build.yml",
+          "note": "the step that runs the gates, ahead of every build and publish"
+        }
+      ],
+      "verified": [
+        {
+          "method": "test",
+          "at": [
+            {
+              "repo": "hanzoai/ci",
+              "path": "bin/certclaims"
+            },
+            {
+              "repo": "hanzoai/ci",
+              "path": ".hanzo/workflows/build.yml",
+              "note": "the step that runs the gates, ahead of every build and publish"
+            }
+          ],
+          "detail": "The gate exits non-zero on a hit and the step runs under `set -e`, so a page making the claim fails the run rather than annotating it. bin/certclaims_test.sh drives it both ways."
+        }
+      ],
+      "maps": [
+        {
+          "clause": "soc2:CC2.3",
+          "strength": "partial"
+        },
+        {
+          "clause": "soc2:CC5.3",
+          "strength": "partial"
+        },
+        {
+          "clause": "iso27001:A.5.36",
+          "strength": "partial"
+        },
+        {
+          "clause": "nist80053:CM",
+          "strength": "partial"
+        }
+      ]
+    },
+    {
+      "id": "ci.merge.unresolved",
+      "category": "product",
+      "claim": "A merge nobody finished cannot ship.",
+      "mechanism": "A gate refuses a tracked file still carrying the three-part marker git writes when it cannot merge. Those markers are ordinary content afterwards — the tree is clean, the diff is empty, and both sides of the merge ship — and in the config and data formats we publish they are silently valid.",
+      "status": "partial",
+      "note": "Partial for scope, not for quality. The gate itself refuses on the spot and the run stops. What is unestablished is its reach: it runs wherever a repository calls the shared pipeline, and the sweep that would say which repositories ought to and do not has not been done, so the honest word is the narrower one.",
+      "enforced": [
+        {
+          "repo": "hanzoai/ci",
+          "path": "bin/conflictmarkers"
+        },
+        {
+          "repo": "hanzoai/ci",
+          "path": ".hanzo/workflows/build.yml",
+          "note": "the step that runs the gates, ahead of every build and publish"
+        }
+      ],
+      "verified": [
+        {
+          "method": "test",
+          "at": [
+            {
+              "repo": "hanzoai/ci",
+              "path": "bin/conflictmarkers"
+            },
+            {
+              "repo": "hanzoai/ci",
+              "path": ".hanzo/workflows/build.yml",
+              "note": "the step that runs the gates, ahead of every build and publish"
+            }
+          ],
+          "detail": "Exits non-zero naming each file and line. It requires the whole three-part shape and strips fenced regions in prose files, so a documented example of the format is not read as an unfinished merge."
+        }
+      ],
+      "maps": [
+        {
+          "clause": "soc2:CC8.1",
+          "strength": "partial"
+        },
+        {
+          "clause": "iso27001:A.8.28",
+          "strength": "partial"
+        },
+        {
+          "clause": "iso27001:A.8.32",
+          "strength": "partial"
+        },
+        {
+          "clause": "nist80053:CM",
+          "strength": "partial"
+        },
+        {
+          "clause": "nist80053:SI",
+          "strength": "partial"
+        }
+      ]
+    },
+    {
+      "id": "ci.arg.public",
+      "category": "product",
+      "claim": "A value baked into a published image has to have said it was public first.",
+      "mechanism": "A build argument ends up inside the image, where anyone who can pull it can read it back. So the gate reads the names a repository declares and refuses any that has not declared itself public by its own prefix. The name carries the assertion because at that moment the value does not exist yet, and guessing secrecy from the shape of a string is wrong in both directions.",
+      "status": "partial",
+      "note": "Partial for scope, not for quality. The gate itself refuses on the spot and the run stops. What is unestablished is its reach: it runs wherever a repository calls the shared pipeline, and the sweep that would say which repositories ought to and do not has not been done, so the honest word is the narrower one.",
+      "enforced": [
+        {
+          "repo": "hanzoai/ci",
+          "path": "bin/publishable"
+        },
+        {
+          "repo": "hanzoai/ci",
+          "path": ".hanzo/workflows/build.yml",
+          "note": "the step that runs the gates, ahead of every build and publish"
+        }
+      ],
+      "verified": [
+        {
+          "method": "test",
+          "at": [
+            {
+              "repo": "hanzoai/ci",
+              "path": "bin/publishable"
+            },
+            {
+              "repo": "hanzoai/ci",
+              "path": ".hanzo/workflows/build.yml",
+              "note": "the step that runs the gates, ahead of every build and publish"
+            }
+          ],
+          "detail": "Exits non-zero on an undeclared name and the image is never built. bin/publishable_test.sh drives the accepted and refused sets."
+        }
+      ],
+      "maps": [
+        {
+          "clause": "soc2:CC6.1",
+          "strength": "partial"
+        },
+        {
+          "clause": "soc2:CC6.7",
+          "strength": "partial"
+        },
+        {
+          "clause": "iso27001:A.8.12",
+          "strength": "partial"
+        },
+        {
+          "clause": "iso27001:A.8.25",
+          "strength": "partial"
+        },
+        {
+          "clause": "nist80053:SA",
+          "strength": "partial"
+        },
+        {
+          "clause": "nist80053:SC",
+          "strength": "partial"
+        }
+      ]
+    },
+    {
+      "id": "surface.party",
+      "category": "product",
+      "claim": "A third party our pages reach is a third party this trust centre names.",
+      "mechanism": "A gate loads each surface as a browser would, takes the hosts the markup names as subresources, reads the enforced content policy, and treats a host as reached only when the markup names it and the policy would permit it. A reached host that no party in the subprocessor list declares fails the run, and so does any advertising or product-analytics host, which is matched over the whole document because the ordinary way one arrives is a script that builds another script at run time.",
+      "status": "partial",
+      "note": "Partial for scope. The rule is exact and it fails the run, but it measures the surfaces it is given, and those are named where it is invoked rather than derived from the set of hosts the estate declares. It also sees only what the first response contains: a party a page reaches later, from code the browser runs, is outside what markup and a policy can show.",
+      "enforced": [
+        {
+          "repo": "hanzoai/trust",
+          "path": "bin/surface.mjs",
+          "symbol": "main"
+        },
+        {
+          "repo": "hanzoai/trust",
+          "path": "subprocessors.json",
+          "note": "the declared parties, and the origins each one is reached at"
+        }
+      ],
+      "verified": [
+        {
+          "method": "test",
+          "at": [
+            {
+              "repo": "hanzoai/trust",
+              "path": "bin/surface.mjs",
+              "symbol": "main"
+            },
+            {
+              "repo": "hanzoai/trust",
+              "path": "hanzo.yml",
+              "note": "the surfaces it is run against"
+            }
+          ],
+          "detail": "Exits non-zero naming the surface and the host. Run over the public surfaces it reports, per surface, whether a content policy is enforced at all and which hosts that policy refuses."
+        }
+      ],
+      "maps": [
+        {
+          "clause": "soc2:CC3.4",
+          "strength": "partial"
+        },
+        {
+          "clause": "soc2:CC9.2",
+          "strength": "partial"
+        },
+        {
+          "clause": "iso27001:A.5.19",
+          "strength": "partial"
+        },
+        {
+          "clause": "iso27001:A.5.22",
+          "strength": "partial"
+        },
+        {
+          "clause": "nist80053:SR",
+          "strength": "partial"
+        }
+      ]
+    },
+    {
+      "id": "status.probe",
+      "category": "incident",
+      "claim": "Whether the platform is answering is measured continuously and published without a credential.",
+      "mechanism": "A prober loops over each declared endpoint in its own goroutine, evaluates the conditions written for it, and keeps the transitions between healthy and unhealthy as events. The read side answers with no credential at all, so the record a customer reads is the record we read.",
+      "status": "partial",
+      "note": "Partial for coverage. The prober watches the endpoints named in its configuration and the estate declares considerably more hosts than that, so a host nobody added is a host nothing watches. Uptime is also kept at hourly resolution for about two days and daily for thirty, so a question about a longer period has no answer here.",
+      "enforced": [
+        {
+          "repo": "hanzoai/status",
+          "path": "watchdog/watchdog.go",
+          "symbol": "Monitor"
+        },
+        {
+          "repo": "hanzoai/status",
+          "path": "api/endpoint_status.go",
+          "symbol": "EndpointStatuses"
+        },
+        {
+          "repo": "hanzoai/status",
+          "path": "api/raw.go",
+          "symbol": "UptimeRaw"
+        }
+      ],
+      "verified": [
+        {
+          "method": "read",
+          "at": [
+            {
+              "repo": "hanzoai/status",
+              "path": "watchdog/watchdog.go",
+              "symbol": "Monitor"
+            },
+            {
+              "repo": "hanzoai/status",
+              "path": "api/endpoint_status.go",
+              "symbol": "EndpointStatuses"
+            }
+          ],
+          "detail": "The prober loop and the two read paths were read in the source, and the public read was exercised against the running service. Nothing here can fail on the control's behalf, so it is a reading and counts as one."
+        }
+      ],
+      "maps": [
+        {
+          "clause": "soc2:CC2.3",
+          "strength": "partial"
+        },
+        {
+          "clause": "soc2:CC7.2",
+          "strength": "partial"
+        },
+        {
+          "clause": "iso27001:A.8.16",
+          "strength": "partial"
+        },
+        {
+          "clause": "nist80053:SI",
+          "strength": "partial"
+        }
+      ]
+    },
+    {
+      "id": "incident.notice",
+      "category": "incident",
+      "claim": "A failing probe reaches a person, and a reader is told what happened.",
+      "mechanism": "The prober's alerting path fires on a run of failures and resolves on recovery, addressed to the operations channel. What a visitor reads is a separate thing: a notice carries a type and a message and is published by editing the service's own configuration.",
+      "status": "partial",
+      "note": "The half that wakes somebody is automatic; the half a customer reads is not. A notice is a hand-written entry, so nothing derives one from a failing probe and nothing requires that one be written. The public record can therefore be silent through an event the alerting path reported, and only a person closes that gap.",
+      "enforced": [
+        {
+          "repo": "hanzoai/status",
+          "path": "watchdog/alerting.go"
+        },
+        {
+          "repo": "hanzoai/status",
+          "path": "config/announcement/announcement.go"
+        }
+      ],
+      "verified": [
+        {
+          "method": "read",
+          "at": [
+            {
+              "repo": "hanzoai/status",
+              "path": "watchdog/alerting.go"
+            },
+            {
+              "repo": "hanzoai/status",
+              "path": "config/announcement/announcement.go"
+            }
+          ],
+          "detail": "Both paths were read. The notice type is a closed set and the list is served on the public configuration read, so a published notice is reachable without a credential once it exists."
+        }
+      ],
+      "maps": [
+        {
+          "clause": "soc2:CC7.3",
+          "strength": "partial"
+        },
+        {
+          "clause": "soc2:CC7.4",
+          "strength": "partial"
+        },
+        {
+          "clause": "iso27001:A.5.24",
+          "strength": "partial"
+        },
+        {
+          "clause": "iso27001:A.5.26",
+          "strength": "partial"
+        },
+        {
+          "clause": "iso27001:A.6.8",
+          "strength": "partial"
+        },
+        {
+          "clause": "nist80053:IR",
+          "strength": "partial"
+        }
+      ]
+    },
+    {
+      "id": "endpoint.posture",
+      "category": "endpoint",
+      "claim": "The state of the machine a person signs in from is taken into account.",
+      "mechanism": "None. Signing in proves a password and then a second factor, and both are facts about the person rather than about the device in front of them. Nothing in the flow reads a device identity, a disk-encryption state, a patch level or a management enrolment, and there is no register of machines against which such a signal could be resolved.",
+      "status": "absent",
+      "note": "Carried so the group is answered rather than left blank. The place named below is where the signal would be read — the point after the password is accepted and before a session exists — and reading it is how you can see that nothing consults one. This is the whole of what we assert about the devices people work from.",
+      "enforced": [
+        {
+          "repo": "hanzoai/iam",
+          "path": "internal/oidc/mfa_gate.go",
+          "symbol": "Gate",
+          "note": "the second-factor gate — the point in the flow a device signal would be read at"
+        }
+      ],
+      "verified": [
+        {
+          "method": "read",
+          "at": [
+            {
+              "repo": "hanzoai/iam",
+              "path": "internal/oidc/mfa_gate.go",
+              "symbol": "Gate"
+            }
+          ],
+          "detail": "The gate was read end to end. It resolves the factors a user and their organization allow and proves one of them; no branch of it reads anything about the machine the request came from."
+        }
+      ],
+      "maps": [
+        {
+          "clause": "soc2:CC6.1",
+          "strength": "partial"
+        },
+        {
+          "clause": "iso27001:A.6.7",
+          "strength": "partial"
+        },
+        {
+          "clause": "iso27001:A.8.1",
+          "strength": "partial"
+        },
+        {
+          "clause": "nist80053:AC",
+          "strength": "partial"
+        }
+      ]
+    },
+    {
+      "id": "edge.transport",
+      "category": "network",
+      "claim": "A browser is told to reach every one of our hosts over TLS and nothing else.",
+      "mechanism": "One shared piece of edge configuration sets the transport-security header for a year with subdomains included, and carries the frame, sniffing, referrer and permissions headers with it. It is attached per route rather than at the entry point, so a route carries it when whoever added the route said so.",
+      "status": "partial",
+      "note": "Measured rather than assumed, and the measurement is why this is not automated. Fewer than half the declared routes name the shared configuration, so most hosts assert nothing; and on the wire the header is absent from public hosts whose route does name it, so naming it is not sufficient either. Setting it once at the entry point would make the default right and make a route that opts out visible, which is the opposite of the arrangement today.",
+      "enforced": [
+        {
+          "repo": "hanzoai/universe",
+          "path": "infra/k8s/ingress/routes.yaml",
+          "note": "the shared header configuration, and the routes that name it"
+        }
+      ],
+      "verified": [
+        {
+          "method": "read",
+          "at": [
+            {
+              "repo": "hanzoai/universe",
+              "path": "infra/k8s/ingress/routes.yaml"
+            }
+          ],
+          "detail": "The routing table was parsed and the routes naming the shared header configuration were counted against the whole set, and the header was then read off the wire from several public hosts. Nothing asserts this on our behalf between one reading and the next, so it is a reading."
+        }
+      ],
+      "maps": [
+        {
+          "clause": "soc2:CC6.6",
+          "strength": "partial"
+        },
+        {
+          "clause": "soc2:CC6.7",
+          "strength": "partial"
+        },
+        {
+          "clause": "iso27001:A.8.20",
+          "strength": "partial"
+        },
+        {
+          "clause": "iso27001:A.8.21",
+          "strength": "partial"
+        },
+        {
+          "clause": "iso27001:A.8.24",
+          "strength": "partial"
+        },
+        {
+          "clause": "nist80053:SC",
+          "strength": "partial"
+        }
+      ]
+    },
+    {
+      "id": "dataroom.tier",
+      "category": "data",
+      "claim": "An artifact somebody outside this organization signed can never be published to everyone.",
+      "mechanism": "The storage engine refuses it. The table holding a published artifact carries a constraint saying an item whose signer is external must stay gated, and the tier column defaults to gated — so a kind nobody has thought of yet arrives private and somebody has to open it deliberately.",
+      "enforced": [
+        {
+          "repo": "hanzoai/cloud",
+          "path": "apps/dataroom/schema.go",
+          "note": "the artifact table and the three constraints on it"
+        }
+      ],
+      "verified": [
+        {
+          "method": "test",
+          "at": [
+            {
+              "repo": "hanzoai/cloud",
+              "path": "apps/dataroom/trust_test.go",
+              "symbol": "TestAuditorSignedCannotBePublic"
+            },
+            {
+              "repo": "hanzoai/cloud",
+              "path": "apps/dataroom/trust_test.go",
+              "symbol": "TestTierDefaultsToGated"
+            },
+            {
+              "repo": "hanzoai/cloud",
+              "path": "apps/dataroom/trust_test.go",
+              "symbol": "TestPublicCenterWithholdsTheGatedTier"
+            }
+          ],
+          "detail": "Three cases drive it: the write is refused, the default holds, and the public reading of a centre carries no gated item. Because the rule lives in the schema, a path through the code written later cannot get round it — which is what these assert, rather than the behaviour of any one handler."
+        }
+      ],
+      "status": "automated",
+      "maps": [
+        {
+          "clause": "soc2:C1.1",
+          "strength": "full"
+        },
+        {
+          "clause": "soc2:CC6.1",
+          "strength": "partial"
+        },
+        {
+          "clause": "iso27001:A.5.12",
+          "strength": "partial"
+        },
+        {
+          "clause": "iso27001:A.8.3",
+          "strength": "full"
+        },
+        {
+          "clause": "nist80053:AC",
+          "strength": "partial"
+        }
+      ]
+    },
+    {
+      "id": "dataroom.grant",
+      "category": "access",
+      "claim": "A gated artifact opens for the party that asked for it and for nobody else.",
+      "mechanism": "A request to read the gated tier is a row with a state. Granting it produces a link bound to the party that asked, so the queue and the live grants are one list, and an administrator of another organization reaches none of it.",
+      "enforced": [
+        {
+          "repo": "hanzoai/cloud",
+          "path": "apps/dataroom/trust.go"
+        },
+        {
+          "repo": "hanzoai/cloud",
+          "path": "apps/dataroom/schema.go",
+          "note": "the request table and the states it may hold"
+        }
+      ],
+      "verified": [
+        {
+          "method": "test",
+          "at": [
+            {
+              "repo": "hanzoai/cloud",
+              "path": "apps/dataroom/trust_test.go",
+              "symbol": "TestGrantOpensOnlyForThePartyThatAsked"
+            },
+            {
+              "repo": "hanzoai/cloud",
+              "path": "apps/dataroom/trust_test.go",
+              "symbol": "TestAForeignOrgAdminReachesNothing"
+            },
+            {
+              "repo": "hanzoai/cloud",
+              "path": "apps/dataroom/trust_test.go",
+              "symbol": "TestAskIsRecordedOrRefused"
+            }
+          ],
+          "detail": "Driven from both sides: the party that asked gets in, a second party holding the same address does not, and an administrator of another organization reaches nothing at all."
+        }
+      ],
+      "status": "automated",
+      "maps": [
+        {
+          "clause": "soc2:CC6.1",
+          "strength": "full"
+        },
+        {
+          "clause": "soc2:CC6.3",
+          "strength": "full"
+        },
+        {
+          "clause": "soc2:C1.1",
+          "strength": "partial"
+        },
+        {
+          "clause": "iso27001:A.5.15",
+          "strength": "full"
+        },
+        {
+          "clause": "iso27001:A.8.3",
+          "strength": "full"
+        },
+        {
+          "clause": "nist80053:AC",
+          "strength": "partial"
+        }
+      ]
+    },
+    {
+      "id": "dataroom.trail",
+      "category": "data",
+      "claim": "Reading a released document leaves a record of who read which page.",
+      "mechanism": "A viewing session records a page-view at a time against the link it was opened with, so what a reviewer actually opened is a list rather than a recollection.",
+      "status": "partial",
+      "note": "Partial because of what the record can and cannot prove. The session and the pages are ours and are written on our side, but the address naming the viewer is taken as stated and is not proven — so the trail establishes that a link was used and which pages were reached, and does not establish who was holding it.",
+      "enforced": [
+        {
+          "repo": "hanzoai/cloud",
+          "path": "apps/dataroom/dataroom.go",
+          "note": "the page-view record on an open viewing session"
+        }
+      ],
+      "verified": [
+        {
+          "method": "read",
+          "at": [
+            {
+              "repo": "hanzoai/cloud",
+              "path": "apps/dataroom/dataroom.go"
+            }
+          ],
+          "detail": "The route and the record it writes were read, along with the note recording that the viewer address is taken as stated. Nothing here fails on the control's behalf."
+        }
+      ],
+      "maps": [
+        {
+          "clause": "soc2:CC6.8",
+          "strength": "partial"
+        },
+        {
+          "clause": "soc2:P6.2",
+          "strength": "partial"
+        },
+        {
+          "clause": "iso27001:A.8.15",
+          "strength": "partial"
+        },
+        {
+          "clause": "nist80053:AU",
+          "strength": "partial"
+        }
+      ]
     }
   ]
 }

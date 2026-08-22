@@ -1,7 +1,18 @@
 'use client';
 
 import { useMemo, useState } from 'react';
-import { ChevronDown, ChevronRight } from '@hanzogui/lucide-icons-2';
+import {
+  AlertTriangle,
+  Building2,
+  ChevronDown,
+  ChevronRight,
+  Database,
+  KeyRound,
+  Laptop,
+  Network,
+  Package,
+  Server,
+} from '@hanzogui/lucide-icons-2';
 import { Card } from '@hanzo/ui/primitives/Card';
 import { CardContent } from '@hanzo/ui/primitives/CardContent';
 import { CardFooter } from '@hanzo/ui/primitives/CardFooter';
@@ -11,6 +22,7 @@ import { Grid } from '@hanzo/ui/primitives/Grid';
 import { Text } from '@hanzo/ui/primitives/Text';
 import { XStack } from '@hanzo/ui/primitives/XStack';
 import { YStack } from '@hanzo/ui/primitives/YStack';
+import type { IconLike } from '@hanzo/ui/product/color';
 import { Segmented, SearchInput, type Option } from '@hanzo/ui/product/Filters';
 import { StatusTag } from '@hanzo/ui/product/StatusTag';
 import { CATEGORIES, type Control, type Site, type Status } from '@/lib/trust';
@@ -29,7 +41,25 @@ const ALL = '';
 
 const caps = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 
-const GROUPS: Option<string>[] = [{ label: 'All', value: ALL }, ...CATEGORIES.map((c) => ({ label: caps(c), value: c }))];
+/**
+ * A mark per group, from the one icon set this page already carries.
+ *
+ * These are concepts rather than brands, so there is no trademark to borrow and
+ * no licence to hold — canonical geometry from a set we ship is the whole of
+ * it. Every group has one, including the ones that turn out to be thin: a group
+ * rendered without a mark beside its siblings reads as a rendering fault, which
+ * is not what we mean to say about it.
+ */
+const GROUP_MARK: Record<string, IconLike> = {
+  infrastructure: Server,
+  data: Database,
+  access: KeyRound,
+  network: Network,
+  endpoint: Laptop,
+  corporate: Building2,
+  product: Package,
+  incident: AlertTriangle,
+};
 
 const STATES: Option<string>[] = [
   { label: 'All', value: ALL },
@@ -63,6 +93,15 @@ export function Controls({ controls }: { controls: Control[] }) {
     });
   }, [controls, group, state, find]);
 
+  // How many controls each group holds — counted here from the same list the
+  // cards below are drawn from, so the tile and the grid cannot disagree.
+  const tally = useMemo(() => {
+    const n: Record<string, number> = {};
+    for (const c of CATEGORIES) n[c] = 0;
+    for (const c of controls) n[c.category ?? 'corporate'] = (n[c.category ?? 'corporate'] ?? 0) + 1;
+    return n;
+  }, [controls]);
+
   if (controls.length === 0) return <Nothing>No controls are published.</Nothing>;
 
   const toggle = (id: string) =>
@@ -74,9 +113,45 @@ export function Controls({ controls }: { controls: Control[] }) {
 
   return (
     <YStack gap="$4">
+      {/* All eight groups, always, each with its mark and its own count.
+          A group is a thing this organization ASSERTS a shape for, so one with
+          few controls is a fact worth reading and one rendered as a gap in a
+          row of tiles is a question nobody asked. Selecting a tile filters;
+          selecting it again clears, so there is one control and not two. */}
+      <Grid min={128} max={4} gap={12}>
+        {CATEGORIES.map((c) => {
+          const Icon = GROUP_MARK[c];
+          const here = group === c;
+          return (
+            <YStack
+              key={c}
+              gap="$1.5"
+              p="$3"
+              rounded={16}
+              borderWidth={1}
+              borderColor={here ? '$color8' : '$borderColor'}
+              bg={here ? '$color3' : '$color1'}
+              cursor="pointer"
+              role="button"
+              aria-pressed={here}
+              onPress={() => setGroup(here ? ALL : c)}
+            >
+              <XStack gap="$2" items="center" justify="space-between">
+                <Icon size={14} color={here ? '$color12' : '$color10'} />
+                <Text fontSize="$5" fontWeight="700" color={here ? '$color12' : '$color11'} className="hz-tnum">
+                  {tally[c]}
+                </Text>
+              </XStack>
+              <Text fontSize="$1" color="$color10">
+                {caps(c)}
+              </Text>
+            </YStack>
+          );
+        })}
+      </Grid>
+
       <YStack gap="$3">
         <SearchInput value={find} onChange={setFind} placeholder="Find a control" name="controls" />
-        <Segmented options={GROUPS} value={group} onChange={setGroup} name="category" />
         <Segmented options={STATES} value={state} onChange={setState} name="status" />
       </YStack>
 

@@ -26,6 +26,7 @@
     "@types/node": "^22.10.2",
     "@types/react": "^19.0.1",
     "@types/react-dom": "^19.0.2",
+    "simple-icons": "16.27.1",
     "typescript": "^5.9.3"
   },
   "packageManager": "pnpm@10.16.1"

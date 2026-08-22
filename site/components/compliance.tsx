@@ -10,6 +10,7 @@ import { Text } from '@hanzo/ui/primitives/Text';
 import { XStack } from '@hanzo/ui/primitives/XStack';
 import { YStack } from '@hanzo/ui/primitives/YStack';
 import { unit, type Coverage } from '@/lib/trust';
+import { Mark } from './mark';
 import { Nothing } from './nothing';
 
 /**
@@ -29,10 +30,20 @@ export function Compliance({ coverage }: { coverage: Coverage[] }) {
       {coverage.map((c) => (
         <Card key={c.framework} rounded={24} gap="$4" bg="$color1">
           <CardHeader gap="$1">
-            <CardTitle size="$5">{c.name}</CardTitle>
-            <CardDescription size="$2">
-              {c.publisher} · {c.edition}
-            </CardDescription>
+            {/* The publisher's plate, never a facsimile of their emblem. A
+                standards body's mark is a trademark, none of these three
+                publish a freely-licensed one, and putting a look-alike beside a
+                coverage figure would be the exact kind of borrowed authority
+                this page exists to avoid. */}
+            <XStack gap="$3" items="center">
+              <Mark name={c.publisher} size={28} />
+              <YStack gap="$0.5" flex={1}>
+                <CardTitle size="$5">{c.name}</CardTitle>
+                <CardDescription size="$2">
+                  {c.publisher} · {c.edition}
+                </CardDescription>
+              </YStack>
+            </XStack>
           </CardHeader>
 
           <CardContent gap="$3">

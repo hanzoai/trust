@@ -359,7 +359,180 @@ on about which module signs, and it is answered by kms.signing.handle, which is 
 ad", at: [{ repo: "hanzoai/iam", path: "internal/oidc/mldsa.go", symbol: "init" }], detail: "The sig\
 nature scheme is implemented in software inside our own binary. No external validated module is reac\
 hed." }], maps: [{ clause: "iso27001:A.8.24", strength: "partial" }, { clause: "nist80053:SC", strength: "\
-partial" }] }];
+partial" }] }, { id: "ci.claim.copy", category: "product", claim: "No page we publish can say we hol\
+d a credential an outside party would have to grant.", mechanism: "A gate reads every tracked page a\
+nd refuses a line that names a published standard beside a word asserting we hold something under it\
+, and refuses a hedge about a future assessment on the same line. It runs before anything is built, \
+so a page that says it never reaches a reader.", status: "partial", note: "Partial for scope, not fo\
+r quality. The gate itself refuses on the spot and the run stops. What is unestablished is its reach\
+: it runs wherever a repository calls the shared pipeline, and the sweep that would say which reposi\
+tories ought to and do not has not been done, so the honest word is the narrower one.", enforced: [{
+  repo: "hanzoai/ci", path: "bin/certclaims" }, { repo: "hanzoai/ci", path: ".hanzo/workflows/build.\
+yml", note: "the step that runs the gates, ahead of every build and publish" }], verified: [{ method: "\
+test", at: [{ repo: "hanzoai/ci", path: "bin/certclaims" }, { repo: "hanzoai/ci", path: ".hanzo/work\
+flows/build.yml", note: "the step that runs the gates, ahead of every build and publish" }], detail: "\
+The gate exits non-zero on a hit and the step runs under `set -e`, so a page making the claim fails \
+the run rather than annotating it. bin/certclaims_test.sh drives it both ways." }], maps: [{ clause: "\
+soc2:CC2.3", strength: "partial" }, { clause: "soc2:CC5.3", strength: "partial" }, { clause: "iso270\
+01:A.5.36", strength: "partial" }, { clause: "nist80053:CM", strength: "partial" }] }, { id: "ci.mer\
+ge.unresolved", category: "product", claim: "A merge nobody finished cannot ship.", mechanism: "A ga\
+te refuses a tracked file still carrying the three-part marker git writes when it cannot merge. Thos\
+e markers are ordinary content afterwards \u2014 the tree is clean, the diff is empty, and both sides of \
+the merge ship \u2014 and in the config and data formats we publish they are silently valid.", status: "\
+partial", note: "Partial for scope, not for quality. The gate itself refuses on the spot and the run\
+ stops. What is unestablished is its reach: it runs wherever a repository calls the shared pipeline,\
+ and the sweep that would say which repositories ought to and do not has not been done, so the hones\
+t word is the narrower one.", enforced: [{ repo: "hanzoai/ci", path: "bin/conflictmarkers" }, { repo: "\
+hanzoai/ci", path: ".hanzo/workflows/build.yml", note: "the step that runs the gates, ahead of every\
+ build and publish" }], verified: [{ method: "test", at: [{ repo: "hanzoai/ci", path: "bin/conflictm\
+arkers" }, { repo: "hanzoai/ci", path: ".hanzo/workflows/build.yml", note: "the step that runs the g\
+ates, ahead of every build and publish" }], detail: "Exits non-zero naming each file and line. It re\
+quires the whole three-part shape and strips fenced regions in prose files, so a documented example \
+of the format is not read as an unfinished merge." }], maps: [{ clause: "soc2:CC8.1", strength: "par\
+tial" }, { clause: "iso27001:A.8.28", strength: "partial" }, { clause: "iso27001:A.8.32", strength: "\
+partial" }, { clause: "nist80053:CM", strength: "partial" }, { clause: "nist80053:SI", strength: "pa\
+rtial" }] }, { id: "ci.arg.public", category: "product", claim: "A value baked into a published imag\
+e has to have said it was public first.", mechanism: "A build argument ends up inside the image, whe\
+re anyone who can pull it can read it back. So the gate reads the names a repository declares and re\
+fuses any that has not declared itself public by its own prefix. The name carries the assertion beca\
+use at that moment the value does not exist yet, and guessing secrecy from the shape of a string is \
+wrong in both directions.", status: "partial", note: "Partial for scope, not for quality. The gate i\
+tself refuses on the spot and the run stops. What is unestablished is its reach: it runs wherever a \
+repository calls the shared pipeline, and the sweep that would say which repositories ought to and d\
+o not has not been done, so the honest word is the narrower one.", enforced: [{ repo: "hanzoai/ci", path: "\
+bin/publishable" }, { repo: "hanzoai/ci", path: ".hanzo/workflows/build.yml", note: "the step that r\
+uns the gates, ahead of every build and publish" }], verified: [{ method: "test", at: [{ repo: "hanz\
+oai/ci", path: "bin/publishable" }, { repo: "hanzoai/ci", path: ".hanzo/workflows/build.yml", note: "\
+the step that runs the gates, ahead of every build and publish" }], detail: "Exits non-zero on an un\
+declared name and the image is never built. bin/publishable_test.sh drives the accepted and refused \
+sets." }], maps: [{ clause: "soc2:CC6.1", strength: "partial" }, { clause: "soc2:CC6.7", strength: "\
+partial" }, { clause: "iso27001:A.8.12", strength: "partial" }, { clause: "iso27001:A.8.25", strength: "\
+partial" }, { clause: "nist80053:SA", strength: "partial" }, { clause: "nist80053:SC", strength: "pa\
+rtial" }] }, { id: "surface.party", category: "product", claim: "A third party our pages reach is a \
+third party this trust centre names.", mechanism: "A gate loads each surface as a browser would, tak\
+es the hosts the markup names as subresources, reads the enforced content policy, and treats a host \
+as reached only when the markup names it and the policy would permit it. A reached host that no part\
+y in the subprocessor list declares fails the run, and so does any advertising or product-analytics \
+host, which is matched over the whole document because the ordinary way one arrives is a script that\
+ builds another script at run time.", status: "partial", note: "Partial for scope. The rule is exact\
+ and it fails the run, but it measures the surfaces it is given, and those are named where it is inv\
+oked rather than derived from the set of hosts the estate declares. It also sees only what the first\
+ response contains: a party a page reaches later, from code the browser runs, is outside what markup\
+ and a policy can show.", enforced: [{ repo: "hanzoai/trust", path: "bin/surface.mjs", symbol: "main" },
+  { repo: "hanzoai/trust", path: "subprocessors.json", note: "the declared parties, and the origins \
+each one is reached at" }], verified: [{ method: "test", at: [{ repo: "hanzoai/trust", path: "bin/su\
+rface.mjs", symbol: "main" }, { repo: "hanzoai/trust", path: "hanzo.yml", note: "the surfaces it is \
+run against" }], detail: "Exits non-zero naming the surface and the host. Run over the public surfac\
+es it reports, per surface, whether a content policy is enforced at all and which hosts that policy \
+refuses." }], maps: [{ clause: "soc2:CC3.4", strength: "partial" }, { clause: "soc2:CC9.2", strength: "\
+partial" }, { clause: "iso27001:A.5.19", strength: "partial" }, { clause: "iso27001:A.5.22", strength: "\
+partial" }, { clause: "nist80053:SR", strength: "partial" }] }, { id: "status.probe", category: "inc\
+ident", claim: "Whether the platform is answering is measured continuously and published without a c\
+redential.", mechanism: "A prober loops over each declared endpoint in its own goroutine, evaluates \
+the conditions written for it, and keeps the transitions between healthy and unhealthy as events. Th\
+e read side answers with no credential at all, so the record a customer reads is the record we read.",
+  status: "partial", note: "Partial for coverage. The prober watches the endpoints named in its conf\
+iguration and the estate declares considerably more hosts than that, so a host nobody added is a hos\
+t nothing watches. Uptime is also kept at hourly resolution for about two days and daily for thirty,\
+ so a question about a longer period has no answer here.", enforced: [{ repo: "hanzoai/status", path: "\
+watchdog/watchdog.go", symbol: "Monitor" }, { repo: "hanzoai/status", path: "api/endpoint_status.go",
+  symbol: "EndpointStatuses" }, { repo: "hanzoai/status", path: "api/raw.go", symbol: "UptimeRaw" }],
+  verified: [{ method: "read", at: [{ repo: "hanzoai/status", path: "watchdog/watchdog.go", symbol: "\
+Monitor" }, { repo: "hanzoai/status", path: "api/endpoint_status.go", symbol: "EndpointStatuses" }],
+  detail: "The prober loop and the two read paths were read in the source, and the public read was e\
+xercised against the running service. Nothing here can fail on the control's behalf, so it is a read\
+ing and counts as one." }], maps: [{ clause: "soc2:CC2.3", strength: "partial" }, { clause: "soc2:CC\
+7.2", strength: "partial" }, { clause: "iso27001:A.8.16", strength: "partial" }, { clause: "nist8005\
+3:SI", strength: "partial" }] }, { id: "incident.notice", category: "incident", claim: "A failing pr\
+obe reaches a person, and a reader is told what happened.", mechanism: "The prober's alerting path f\
+ires on a run of failures and resolves on recovery, addressed to the operations channel. What a visi\
+tor reads is a separate thing: a notice carries a type and a message and is published by editing the\
+ service's own configuration.", status: "partial", note: "The half that wakes somebody is automatic;\
+ the half a customer reads is not. A notice is a hand-written entry, so nothing derives one from a f\
+ailing probe and nothing requires that one be written. The public record can therefore be silent thr\
+ough an event the alerting path reported, and only a person closes that gap.", enforced: [{ repo: "h\
+anzoai/status", path: "watchdog/alerting.go" }, { repo: "hanzoai/status", path: "config/announcement\
+/announcement.go" }], verified: [{ method: "read", at: [{ repo: "hanzoai/status", path: "watchdog/al\
+erting.go" }, { repo: "hanzoai/status", path: "config/announcement/announcement.go" }], detail: "Bot\
+h paths were read. The notice type is a closed set and the list is served on the public configuratio\
+n read, so a published notice is reachable without a credential once it exists." }], maps: [{ clause: "\
+soc2:CC7.3", strength: "partial" }, { clause: "soc2:CC7.4", strength: "partial" }, { clause: "iso270\
+01:A.5.24", strength: "partial" }, { clause: "iso27001:A.5.26", strength: "partial" }, { clause: "is\
+o27001:A.6.8", strength: "partial" }, { clause: "nist80053:IR", strength: "partial" }] }, { id: "end\
+point.posture", category: "endpoint", claim: "The state of the machine a person signs in from is tak\
+en into account.", mechanism: "None. Signing in proves a password and then a second factor, and both\
+ are facts about the person rather than about the device in front of them. Nothing in the flow reads\
+ a device identity, a disk-encryption state, a patch level or a management enrolment, and there is n\
+o register of machines against which such a signal could be resolved.", status: "absent", note: "Car\
+ried so the group is answered rather than left blank. The place named below is where the signal woul\
+d be read \u2014 the point after the password is accepted and before a session exists \u2014 and reading it is\
+ how you can see that nothing consults one. This is the whole of what we assert about the devices pe\
+ople work from.", enforced: [{ repo: "hanzoai/iam", path: "internal/oidc/mfa_gate.go", symbol: "Gate",
+  note: "the second-factor gate \u2014 the point in the flow a device signal would be read at" }], verified: [
+  { method: "read", at: [{ repo: "hanzoai/iam", path: "internal/oidc/mfa_gate.go", symbol: "Gate" }],
+  detail: "The gate was read end to end. It resolves the factors a user and their organization allow\
+ and proves one of them; no branch of it reads anything about the machine the request came from." }],
+  maps: [{ clause: "soc2:CC6.1", strength: "partial" }, { clause: "iso27001:A.6.7", strength: "parti\
+al" }, { clause: "iso27001:A.8.1", strength: "partial" }, { clause: "nist80053:AC", strength: "parti\
+al" }] }, { id: "edge.transport", category: "network", claim: "A browser is told to reach every one \
+of our hosts over TLS and nothing else.", mechanism: "One shared piece of edge configuration sets th\
+e transport-security header for a year with subdomains included, and carries the frame, sniffing, re\
+ferrer and permissions headers with it. It is attached per route rather than at the entry point, so \
+a route carries it when whoever added the route said so.", status: "partial", note: "Measured rather\
+ than assumed, and the measurement is why this is not automated. Fewer than half the declared routes\
+ name the shared configuration, so most hosts assert nothing; and on the wire the header is absent f\
+rom public hosts whose route does name it, so naming it is not sufficient either. Setting it once at\
+ the entry point would make the default right and make a route that opts out visible, which is the o\
+pposite of the arrangement today.", enforced: [{ repo: "hanzoai/universe", path: "infra/k8s/ingress/\
+routes.yaml", note: "the shared header configuration, and the routes that name it" }], verified: [{ method: "\
+read", at: [{ repo: "hanzoai/universe", path: "infra/k8s/ingress/routes.yaml" }], detail: "The routi\
+ng table was parsed and the routes naming the shared header configuration were counted against the w\
+hole set, and the header was then read off the wire from several public hosts. Nothing asserts this \
+on our behalf between one reading and the next, so it is a reading." }], maps: [{ clause: "soc2:CC6.\
+6", strength: "partial" }, { clause: "soc2:CC6.7", strength: "partial" }, { clause: "iso27001:A.8.20",
+  strength: "partial" }, { clause: "iso27001:A.8.21", strength: "partial" }, { clause: "iso27001:A.8\
+.24", strength: "partial" }, { clause: "nist80053:SC", strength: "partial" }] }, { id: "dataroom.tie\
+r", category: "data", claim: "An artifact somebody outside this organization signed can never be pub\
+lished to everyone.", mechanism: "The storage engine refuses it. The table holding a published artif\
+act carries a constraint saying an item whose signer is external must stay gated, and the tier colum\
+n defaults to gated \u2014 so a kind nobody has thought of yet arrives private and somebody has to open i\
+t deliberately.", status: "automated", enforced: [{ repo: "hanzoai/cloud", path: "apps/dataroom/sche\
+ma.go", note: "the artifact table and the three constraints on it" }], verified: [{ method: "test", at: [
+  { repo: "hanzoai/cloud", path: "apps/dataroom/trust_test.go", symbol: "TestAuditorSignedCannotBePu\
+blic" }, { repo: "hanzoai/cloud", path: "apps/dataroom/trust_test.go", symbol: "TestTierDefaultsToGa\
+ted" }, { repo: "hanzoai/cloud", path: "apps/dataroom/trust_test.go", symbol: "TestPublicCenterWithh\
+oldsTheGatedTier" }], detail: "Three cases drive it: the write is refused, the default holds, and th\
+e public reading of a centre carries no gated item. Because the rule lives in the schema, a path thr\
+ough the code written later cannot get round it \u2014 which is what these assert, rather than the behavi\
+our of any one handler." }], maps: [{ clause: "soc2:C1.1", strength: "full" }, { clause: "soc2:CC6.1",
+  strength: "partial" }, { clause: "iso27001:A.5.12", strength: "partial" }, { clause: "iso27001:A.8\
+.3", strength: "full" }, { clause: "nist80053:AC", strength: "partial" }] }, { id: "dataroom.grant",
+  category: "access", claim: "A gated artifact opens for the party that asked for it and for nobody \
+else.", mechanism: "A request to read the gated tier is a row with a state. Granting it produces a l\
+ink bound to the party that asked, so the queue and the live grants are one list, and an administrat\
+or of another organization reaches none of it.", status: "automated", enforced: [{ repo: "hanzoai/cl\
+oud", path: "apps/dataroom/trust.go" }, { repo: "hanzoai/cloud", path: "apps/dataroom/schema.go", note: "\
+the request table and the states it may hold" }], verified: [{ method: "test", at: [{ repo: "hanzoai\
+/cloud", path: "apps/dataroom/trust_test.go", symbol: "TestGrantOpensOnlyForThePartyThatAsked" }, { repo: "\
+hanzoai/cloud", path: "apps/dataroom/trust_test.go", symbol: "TestAForeignOrgAdminReachesNothing" },
+  { repo: "hanzoai/cloud", path: "apps/dataroom/trust_test.go", symbol: "TestAskIsRecordedOrRefused" }],
+  detail: "Driven from both sides: the party that asked gets in, a second party holding the same add\
+ress does not, and an administrator of another organization reaches nothing at all." }], maps: [{ clause: "\
+soc2:CC6.1", strength: "full" }, { clause: "soc2:CC6.3", strength: "full" }, { clause: "soc2:C1.1", strength: "\
+partial" }, { clause: "iso27001:A.5.15", strength: "full" }, { clause: "iso27001:A.8.3", strength: "\
+full" }, { clause: "nist80053:AC", strength: "partial" }] }, { id: "dataroom.trail", category: "data",
+  claim: "Reading a released document leaves a record of who read which page.", mechanism: "A viewin\
+g session records a page-view at a time against the link it was opened with, so what a reviewer actu\
+ally opened is a list rather than a recollection.", status: "partial", note: "Partial because of wha\
+t the record can and cannot prove. The session and the pages are ours and are written on our side, b\
+ut the address naming the viewer is taken as stated and is not proven \u2014 so the trail establishes tha\
+t a link was used and which pages were reached, and does not establish who was holding it.", enforced: [
+  { repo: "hanzoai/cloud", path: "apps/dataroom/dataroom.go", note: "the page-view record on an open\
+ viewing session" }], verified: [{ method: "read", at: [{ repo: "hanzoai/cloud", path: "apps/dataroo\
+m/dataroom.go" }], detail: "The route and the record it writes were read, along with the note record\
+ing that the viewer address is taken as stated. Nothing here fails on the control's behalf." }], maps: [
+  { clause: "soc2:CC6.8", strength: "partial" }, { clause: "soc2:P6.2", strength: "partial" }, { clause: "\
+iso27001:A.8.15", strength: "partial" }, { clause: "nist80053:AU", strength: "partial" }] }];
 
   // <define:__FRAMEWORKS__>
   var define_FRAMEWORKS_default = { $comment: "Framework clause catalogs. Reference data: the publis\
@@ -557,6 +730,120 @@ System and Services Acquisition" }, { id: "SC", group: "800-53 Rev 5", title: "S
 ions Protection" }, { id: "SI", group: "800-53 Rev 5", title: "System and Information Integrity" }, {
   id: "SR", group: "800-53 Rev 5", title: "Supply Chain Risk Management" }] } };
 
+  // <define:__SUBPROCESSORS__>
+  var define_SUBPROCESSORS_default = [{ id: "digitalocean", name: "DigitalOcean", role: "processor",
+  mark: "digitalocean", purpose: "The infrastructure everything runs on: the Kubernetes clusters, th\
+e block volumes each database lives on, and the load balancers that terminate traffic. Separately, t\
+he inference endpoint that serves embeddings, images, video and reranking.", data: "Everything. Ever\
+y request reaches a process on their compute, and every byte we store at rest sits on their volumes,\
+ so there is no customer record that is not on their hardware. The inference endpoint additionally r\
+eceives the text or image sent to it.", location: "United States (sfo3), on the operator's global fo\
+otprint", url: "https://www.digitalocean.com", terms: "https://www.digitalocean.com/legal/data-proce\
+ssing-agreement", evidence: [{ repo: "hanzoai/universe", path: "infra/terraform/main.tf", note: "the\
+ provider, the network, the firewall and the nodes are declared here" }, { repo: "hanzoai/universe",
+  path: "infra/k8s/ingress/service.yaml", note: "the load balancer that terminates public traffic" },
+  { repo: "hanzoai/universe", path: "charts/app/values/hanzo/cloud.yaml", note: "the inference endpo\
+int and the key that reaches it" }] }, { id: "cloudflare", name: "Cloudflare", role: "processor", mark: "\
+cloudflare", purpose: "Authoritative DNS for every zone, and the reverse proxy in front of the hosts\
+ marked proxied \u2014 which means they terminate TLS for those and see the request in the clear. A worke\
+r sits in the analytics path, the sign-in pages are served from their hosting, and aggregate mail re\
+ports are addressed to them.", data: "For a proxied host: the whole request. The visitor's address, \
+the URL, the headers, the body, and the response. Their page-timing script is served to hanzo.ai and\
+ reports that visitor's page views back to them.", location: "United States, served from the operato\
+r's global edge", url: "https://www.cloudflare.com", terms: "https://www.cloudflare.com/cloudflare-c\
+ustomer-dpa/", evidence: [{ repo: "hanzoai/universe", path: "infra/cf-zones/hanzo-ai.yaml", note: "t\
+he zone, the records marked proxied, and the address aggregate mail reports go to" }, { repo: "hanzo\
+ai/universe", path: "workers/analytics-proxy/worker.js", note: "a worker in the request path of ever\
+y analytics beacon" }, { repo: "hanzoai/universe", path: "charts/app/values/hanzo/tabs.yaml", note: "\
+records that the page-timing script is inserted at the edge rather than by us, so it appears in no p\
+age we build" }, { origin: "static.cloudflareinsights.com", note: "the page-timing script. Inserted \
+into every hanzo.ai host; only the surfaces whose enforced policy omits it refuse to run it" }] }, {
+  id: "openrouter", name: "OpenRouter", role: "processor", mark: "openrouter", purpose: "Model infer\
+ence. The route most text and vision requests take.", data: "The prompt as sent, including whatever \
+a customer put in it, and the completion returned. They route onward to the operator that runs the m\
+odel, so a prompt reaching them may reach that operator too.", location: "United States", url: "http\
+s://openrouter.ai", terms: "https://openrouter.ai/terms", evidence: [{ repo: "hanzoai/universe", path: "\
+charts/app/values/hanzo/cloud.yaml", note: "the endpoint and the key" }, { repo: "hanzoai/universe",
+  path: "charts/app/values/enso/enso.yaml", note: "the same endpoint declared for the router" }] }, {
+  id: "fireworks", name: "Fireworks AI", role: "processor", purpose: "The embedder behind the knowle\
+dge store \u2014 it turns a document into the vector the store is searched by.", data: "The text of \
+every document ingested into a knowledge store, and the text of every query run against one. This is\
+ the widest document flow on this list and it is worth reading twice: a file a customer uploads for \
+retrieval is sent here in full.", location: "United States", url: "https://fireworks.ai", terms: "ht\
+tps://fireworks.ai/terms-of-service", evidence: [{ repo: "hanzoai/universe", path: "charts/app/value\
+s/hanzo/cloud.yaml", note: "the embedding endpoint, the model and the key reference" }] }, { id: "op\
+enai", name: "OpenAI", role: "processor", purpose: "Model inference, on a key we hold.", data: "The \
+prompt sent to a model they serve, and the completion returned.", location: "United States", url: "h\
+ttps://openai.com", terms: "https://openai.com/policies/data-processing-addendum", evidence: [{ repo: "\
+hanzoai/universe", path: "charts/app/values/hanzo/cloud.yaml", note: "the key, held in the shared mo\
+del-key secret" }] }, { id: "anthropic", name: "Anthropic", role: "processor", mark: "anthropic", purpose: "\
+Model inference, on a key we hold.", data: "The prompt sent to a model they serve, and the completio\
+n returned.", location: "United States", url: "https://www.anthropic.com", terms: "https://www.anthr\
+opic.com/legal/commercial-terms", evidence: [{ repo: "hanzoai/universe", path: "charts/app/values/ha\
+nzo/cloud.yaml", note: "the key, held in the shared model-key secret" }] }, { id: "deepseek", name: "\
+DeepSeek", role: "processor", mark: "deepseek", purpose: "Model inference, on a key we hold.", data: "\
+The prompt sent to a model they serve, and the completion returned.", location: "China", url: "https\
+://www.deepseek.com", terms: "https://platform.deepseek.com/downloads/DeepSeek%20Open%20Platform%20T\
+erms%20of%20Service.html", evidence: [{ repo: "hanzoai/universe", path: "cloud/src/providers.rs", note: "\
+the endpoint" }] }, { id: "twilio", name: "Twilio", role: "processor", purpose: "Message delivery \u2014 \
+text, voice and chat through the messaging interface, and mail through the mail interface. One party\
+, two products.", data: "The recipient's number or address, and the body of the message sent to them\
+.", location: "United States", url: "https://www.twilio.com", terms: "https://www.twilio.com/en-us/l\
+egal/data-protection-addendum", evidence: [{ repo: "hanzoai/cloud", path: "apps/notify/twilio.go", symbol: "\
+register", note: "one party registered as two providers, and the credentials each reads" }, { repo: "\
+hanzoai/universe", path: "charts/app/values/hanzo/iam.yaml", note: "records that the credentials are\
+ held per organization in the key store rather than as a deployment secret" }] }, { id: "google", name: "\
+Google", role: "processor", mark: "google", purpose: "Two unrelated things. Signing in with a Google\
+ account, which is a customer's own choice at the sign-in page. And the mail exchange for our own do\
+mains, which is where a message a customer sends us arrives.", data: "For sign-in: the account ident\
+ifier and the profile fields that flow back with it. For mail: any message a customer addresses to u\
+s, in full.", location: "United States", url: "https://workspace.google.com", terms: "https://cloud.\
+google.com/terms/data-processing-addendum", evidence: [{ repo: "hanzoai/universe", path: "infra/k8s/\
+kms-canonical-crs/hanzo/google-oauth-kms-sync.yaml", note: "the sign-in credentials" }, { repo: "han\
+zoai/universe", path: "infra/cf-zones/hanzo-ai.yaml", note: "the mail exchange records for the zone" }] },
+  { id: "github", name: "GitHub", role: "processor", mark: "github", purpose: "Signing in with a Git\
+Hub account, and reading the repository a customer asks us to build. The public mirror of our own so\
+urce is a different relationship and no customer data is in it.", data: "For sign-in: the account id\
+entifier and the profile fields that flow back. For a build: the contents of the repository a custom\
+er connected, read with a token scoped to what they installed us on.", location: "United States", url: "\
+https://github.com", terms: "https://github.com/customer-terms/github-data-protection-agreement", evidence: [
+  { repo: "hanzoai/universe", path: "infra/k8s/kms-canonical-crs/hanzo/github-oauth-kms-sync.yaml", note: "\
+the sign-in credentials" }, { repo: "hanzoai/universe", path: "infra/k8s/hanzo-build/ghcr-renew.yaml",
+  note: "the installation token minted to read a connected repository" }] }, { id: "square", name: "\
+Square", role: "processor", mark: "square", purpose: "Taking payment. The card is entered into a fra\
+me they serve, so the number itself goes from the browser to them and never through us.", data: "The\
+ buyer's identity and the amount. The card number reaches them directly and does not reach us at any\
+ point.", location: "United States", url: "https://squareup.com", terms: "https://squareup.com/legal\
+/general/dpa", evidence: [{ repo: "hanzoai/universe", path: "charts/app/values/hanzo/pay.yaml", note: "\
+the origins the checkout page is permitted to reach" }, { repo: "hanzoai/cloud", path: "apps/integra\
+tions/payments.go", note: "the endpoint" }] }, { id: "slack", name: "Slack", role: "processor", purpose: "\
+Where operational alerts are posted, and the app a customer can install into their own workspace.", data: "\
+The text of an alert, which names a service and a condition. For an installed app, whatever the cust\
+omer's own workspace sends it.", location: "United States", url: "https://slack.com", terms: "https:\
+//slack.com/trust/data-management/data-processing-addendum", evidence: [{ repo: "hanzoai/universe", path: "\
+infra/k8s/kms-canonical-crs/hanzo/cloud-slack-kms-sync.yaml", note: "the app credentials and the sig\
+ning secret" }, { repo: "hanzoai/universe", path: "charts/app/values/hanzo/cloud.yaml", note: "the c\
+hannel alerts are addressed to" }] }, { id: "amazon", name: "Amazon Web Services", role: "vendor", purpose: "\
+Named in configuration and not used. Their command-line tool is the client we run against our OWN ob\
+ject store, and the region string beside it is a value that client requires rather than a place anyt\
+hing is stored. The managed-model endpoint is written down and left switched off.", data: "None. Eve\
+ry bucket those commands address resolves inside the cluster, and the model endpoint is commented ou\
+t rather than configured.", location: "Not applicable", url: "https://aws.amazon.com", evidence: [{ repo: "\
+hanzoai/universe", path: "infra/k8s/git/create-bucket-job.yaml", note: "the tool, run against the in\
+-cluster store" }, { repo: "hanzoai/universe", path: "charts/app/values/enso/enso.yaml", note: "the \
+managed-model endpoint, commented out and marked as waiting on credentials" }] }, { id: "googleads",
+  name: "Google Ads", role: "vendor", mark: "googleads", purpose: "Advertising we buy. Buying an adv\
+ertisement is a purchase from a platform, not a route data travels.", data: "None. No script of thei\
+rs is served by any Hanzo surface, no identifier is shared with them, and nothing about a visitor to\
+ our sites reaches them. `bin/surface` is what keeps that true rather than remembered.", location: "\
+Not applicable", url: "https://ads.google.com", evidence: [{ repo: "hanzoai/trust", path: "bin/surfa\
+ce.mjs", note: "refuses the build if a measurement tag of theirs is ever reached from a Hanzo surfac\
+e" }] }, { id: "meta", name: "Meta", role: "vendor", mark: "meta", purpose: "Advertising we buy. Sam\
+e relationship as the platform above and the same boundary.", data: "None. No script of theirs is se\
+rved by any Hanzo surface, and no visitor event is sent to them.", location: "Not applicable", url: "\
+https://www.facebook.com/business", evidence: [{ repo: "hanzoai/trust", path: "bin/surface.mjs", note: "\
+refuses the build if their tag is ever reached from a Hanzo surface" }] }];
+
   // check.mjs
   var ID = /^[a-z0-9]+(\.[a-z0-9-]+)+$/;
   var STATUS = ["automated", "partial", "absent"];
@@ -605,7 +892,7 @@ ions Protection" }, { id: "SI", group: "800-53 Rev 5", title: "System and Inform
     }
     if (!isStr(place.repo)) problems.push(`${where}: repo is required`);
     if (!isStr(place.path)) problems.push(`${where}: path is required`);
-    else if (/^[/.]|\s/.test(place.path)) {
+    else if (/^\//.test(place.path) || /\s/.test(place.path) || /(^|\/)\.\.?(\/|$)/.test(place.path)) {
       problems.push(`${where}: path must be repo-relative with no spaces (got "${place.path}")`);
     }
     if (place.line !== void 0 && (!Number.isInteger(place.line) || place.line < 1)) {
@@ -738,11 +1025,91 @@ t`);
     }
     return problems;
   }
+  var ROLES = ["processor", "vendor"];
+  var SLUG = /^[a-z0-9]+(-[a-z0-9]+)*$/;
+  function checkEvidence(e, where, problems) {
+    if (!e || typeof e !== "object") {
+      problems.push(`${where}: not an object`);
+      return;
+    }
+    const origin = typeof e.origin === "string" ? e.origin.trim() : "";
+    if (origin) {
+      if (!/^[a-z0-9]([-a-z0-9.]*[a-z0-9])?$/.test(origin) || origin.indexOf(".") < 0) {
+        problems.push(`${where}: origin must be a bare hostname (got "${e.origin}")`);
+      }
+      if (e.repo !== void 0 || e.path !== void 0) {
+        problems.push(`${where}: an origin and a repository path are two kinds of evidence, not one \
+entry`);
+      }
+      return;
+    }
+    checkPlace(e, where, problems);
+  }
+  function checkSubprocessors(input) {
+    const problems = [];
+    const rows = Array.isArray(input) ? input : input && input.subprocessors;
+    if (!Array.isArray(rows)) {
+      return ["subprocessors.json: expected a list of parties, or an envelope holding one"];
+    }
+    const seen = /* @__PURE__ */ new Set();
+    for (let i = 0; i < rows.length; i++) {
+      const s = rows[i];
+      const at = `subprocessors.json[${s && s.id || i}]`;
+      if (!s || typeof s !== "object") {
+        problems.push(`${at}: not an object`);
+        continue;
+      }
+      if (!isStr(s.id)) problems.push(`${at}: id is required`);
+      else if (!SLUG.test(s.id)) problems.push(`${at}: id must be a lowercase slug, e.g. digitalocea\
+n`);
+      else if (seen.has(s.id)) problems.push(`${at}: duplicate id`);
+      if (isStr(s.id)) seen.add(s.id);
+      if (!isStr(s.name)) problems.push(`${at}: name is required`);
+      if (!isStr(s.purpose)) problems.push(`${at}: purpose is required \u2014 why this party is here`);
+      if (!isStr(s.data)) {
+        problems.push(`${at}: data is required \u2014 what customer data reaches this party, or that none\
+ does and why`);
+      }
+      if (s.mark !== void 0 && (!isStr(s.mark) || !SLUG.test(s.mark))) {
+        problems.push(`${at}: mark must be a lowercase slug naming a canonical mark`);
+      }
+      if (s.url !== void 0 && !isStr(s.url)) problems.push(`${at}: url must be a non-empty string wh\
+en present`);
+      if (ROLES.indexOf(s.role) < 0) {
+        problems.push(`${at}: role must be one of ${ROLES.join(", ")}`);
+      } else if (s.role === "processor") {
+        if (!isStr(s.location)) {
+          problems.push(`${at}: a processor must state where it is \u2014 the data goes there`);
+        }
+        if (!isStr(s.terms)) {
+          problems.push(`${at}: a processor must name the terms it processes under`);
+        }
+      }
+      if (!isArr(s.evidence)) {
+        problems.push(`${at}: evidence must name at least one place or origin`);
+      } else {
+        s.evidence.forEach((e, n) => checkEvidence(e, `${at}.evidence[${n}]`, problems));
+      }
+      const text = prose(s);
+      for (const re of CLAIMS) {
+        const hit = re.exec(text);
+        if (hit) problems.push(`${at}: prose claims "${hit[0]}" \u2014 this repo does not restate another\
+ party's status`);
+      }
+      for (const re of FRAMEWORK_WORDS) {
+        const hit = re.exec(text);
+        if (hit) problems.push(`${at}: prose names "${hit[0]}" \u2014 a framework belongs in maps, where \
+it carries a number`);
+      }
+    }
+    return problems;
+  }
 
   // src/inventory.ts
   var CONTROLS = define_CONTROLS_default;
   var FRAMEWORKS = define_FRAMEWORKS_default;
-  var VERSION = "0.2.3";
+  var SUBPROCESSORS = define_SUBPROCESSORS_default;
+  var VERSION = "0.2.4";
   function ids() {
     const out = [];
     for (const k in FRAMEWORKS) {
@@ -890,9 +1257,28 @@ t`);
     }
     return out;
   }
-  function baseline(id) {
-    if (!own()) return false;
-    for (let i = 0; i < CONTROLS.length; i++) if (CONTROLS[i].id === id) return true;
+  function parties() {
+    const base = own() ? SUBPROCESSORS : [];
+    const seen = {};
+    for (let i = 0; i < base.length; i++) seen[base[i].id] = true;
+    const out = base.slice();
+    const rows = list("subprocessor");
+    for (let i = 0; i < rows.length; i++) {
+      const s = Object.assign({}, rows[i].data, { id: rows[i].id });
+      if (seen[s.id]) continue;
+      out.push(s);
+    }
+    return out;
+  }
+  var COMPILED = {
+    control: CONTROLS,
+    subprocessor: SUBPROCESSORS
+  };
+  function governed(kind, id) {
+    if (!own() || !id) return false;
+    const rows = Object.prototype.hasOwnProperty.call(COMPILED, kind) ? COMPILED[kind] : null;
+    if (!rows) return false;
+    for (let i = 0; i < rows.length; i++) if (rows[i].id === id) return true;
     return false;
   }
   function validate(kind, id, data) {
@@ -927,12 +1313,12 @@ leased through a grant rather than published"
         }
         return p;
       }
-      case "subprocessor": {
-        const p = [];
-        if (!has(data.name)) p.push("name is required");
-        if (!has(data.purpose)) p.push("purpose is required \u2014 a name alone says nothing");
-        return p;
-      }
+      // The SAME module the build gate runs, so an authored party is held to the
+      // rule a committed one is: it must take a role from the closed pair, say
+      // what customer data reaches it, and — if it is a processor — say where it
+      // is and under which terms. A name and a sentence is not a disclosure.
+      case "subprocessor":
+        return checkSubprocessors([Object.assign({}, data, { id })]);
       case "policy":
         return has(data.title) ? [] : ["title is required"];
       case "faq": {
@@ -963,12 +1349,12 @@ leased through a grant rather than published"
     const data = Object.assign({}, body);
     let key = SINGLE[k] ? "" : str(id) || newId();
     delete data.id;
-    if (k === "control" && baseline(key)) {
+    if (governed(k, key)) {
       return {
         ok: false,
         status: 409,
-        message: "control " + key + " is part of this deployment's own inventory, which is governed \
-in git and cannot be authored through the API"
+        message: k + " " + key + " is part of this deployment's own inventory, which is governed in \
+git and cannot be authored through the API"
       };
     }
     const errors = validate(k, key, data);
@@ -982,12 +1368,12 @@ in git and cannot be authored through the API"
   function remove(kind, id) {
     if (!isKind(kind)) return { ok: false, status: 404, message: "no trust section " + kind };
     const k = kind;
-    if (k === "control" && baseline(id)) {
+    if (governed(k, id)) {
       return {
         ok: false,
         status: 409,
-        message: "control " + id + " is part of this deployment's own inventory and is removed by a \
-commit, not by a request"
+        message: k + " " + id + " is part of this deployment's own inventory and is removed by a com\
+mit, not by a request"
       };
     }
     const n = drop(k, SINGLE[k] ? "" : id);
@@ -1290,7 +1676,7 @@ iles the inventory names, not from the trail",
       inventory: s.controls,
       frameworks: frameworks(),
       documents: documents(grant),
-      subprocessors: section("subprocessor"),
+      subprocessors: parties(),
       policies: section("policy"),
       faq: section("faq"),
       updates: section("update"),
@@ -1332,7 +1718,7 @@ iles the inventory names, not from the trail",
       return ok(__spreadValues({ version: VERSION, generated: now() }, d));
     },
     "documents.list": () => ok({ documents: documents(true) }),
-    "subprocessors.list": () => ok({ subprocessors: section("subprocessor") }),
+    "subprocessors.list": () => ok({ subprocessors: parties() }),
     "policies.list": () => ok({ policies: section("policy") }),
     "faq.list": () => ok({ faq: section("faq") }),
     "updates.list": () => ok({ updates: section("update") }),

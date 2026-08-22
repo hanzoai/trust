@@ -8,6 +8,7 @@
 
 declare const __CONTROLS__: Control[];
 declare const __FRAMEWORKS__: Frameworks;
+declare const __SUBPROCESSORS__: Subprocessor[];
 declare const __VERSION__: string;
 
 // Where a mechanism lives. `path` is relative to `repo`'s root; `line` points at
@@ -81,10 +82,39 @@ export interface Framework {
 
 export type Frameworks = Record<string, Framework>;
 
+// processor — receives or can reach customer data.
+// vendor    — a party we buy from that no customer data reaches.
+//
+// The distinction is the disclosure. `data` carries it in words on both sides,
+// because "none, and here is why" is a claim and a blank field is not one.
+export type Role = "processor" | "vendor";
+
+// Where the relationship is declared, or the origin a browser contacts. Two
+// kinds, one list: the first is the same Place a control's `enforced` names, the
+// second is what `bin/surface` resolves against what our pages actually reach.
+export interface Trace extends Partial<Place> {
+  origin?: string;
+  note?: string;
+}
+
+export interface Subprocessor {
+  id: string;
+  name: string;
+  role: Role;
+  purpose: string;
+  data: string;
+  location?: string;
+  url?: string;
+  terms?: string;
+  mark?: string;
+  evidence: Trace[];
+}
+
 // Referenced once each: esbuild substitutes the literal at every occurrence, so
 // a second reference would inline the whole inventory a second time.
 export const CONTROLS: Control[] = __CONTROLS__;
 export const FRAMEWORKS: Frameworks = __FRAMEWORKS__;
+export const SUBPROCESSORS: Subprocessor[] = __SUBPROCESSORS__;
 export const VERSION: string = __VERSION__;
 
 // Keys starting with "$" are file metadata, not frameworks. One place knows it.

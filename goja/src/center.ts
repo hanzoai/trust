@@ -17,8 +17,8 @@
 // listing with its title and its date and no address, which is what makes
 // "available on request" a fact a reader can check rather than a phrase.
 
-import { checkControls, checkFrameworks } from "../check.mjs";
-import { Control, CONTROLS, FRAMEWORKS } from "./inventory";
+import { checkControls, checkFrameworks, checkSubprocessors } from "../check.mjs";
+import { Control, CONTROLS, FRAMEWORKS, Subprocessor, SUBPROCESSORS } from "./inventory";
 import { drop, get, isKind, Kind, list, newId, own, put, Record_, SINGLE } from "./db";
 
 // The eight groups a control belongs to. A closed vocabulary, because the page
@@ -92,10 +92,47 @@ export function category(c: Control): string {
   return "corporate";
 }
 
-// Whether a control is the deployment's own, and therefore not writable here.
-export function baseline(id: string): boolean {
-  if (!own()) return false;
-  for (let i = 0; i < CONTROLS.length; i++) if (CONTROLS[i].id === id) return true;
+// ---------------------------------------------------------------------------
+// Subprocessors: the same two sources, folded by the same rule.
+// ---------------------------------------------------------------------------
+
+// Who else touches the data. This is `controls()` one section over, and
+// deliberately so: the deployment's own list is compiled in and governed in git,
+// because a party that can read customer data is not something a request should
+// be able to add or remove; every other organization authors rows. A row
+// carrying a baseline id is dropped rather than merged, so a write cannot
+// restate a disclosure the build gate approved.
+export function parties(): Subprocessor[] {
+  const base: Subprocessor[] = own() ? SUBPROCESSORS : [];
+  const seen: Record<string, boolean> = {};
+  for (let i = 0; i < base.length; i++) seen[base[i].id] = true;
+
+  const out = base.slice();
+  const rows = list("subprocessor");
+  for (let i = 0; i < rows.length; i++) {
+    const s = Object.assign({}, rows[i].data, { id: rows[i].id }) as unknown as Subprocessor;
+    if (seen[s.id]) continue;
+    out.push(s);
+  }
+  return out;
+}
+
+// Whether a record is part of the deployment's own compiled-in inventory, and
+// therefore governed by a commit rather than by a request.
+//
+// TWO sections have a compiled-in half and the question is the same one for
+// both, so it is asked in one place: a second copy is how the control guard and
+// the party guard come to disagree about what "ours" means.
+const COMPILED: Record<string, { id: string }[]> = {
+  control: CONTROLS,
+  subprocessor: SUBPROCESSORS,
+};
+
+export function governed(kind: string, id: string): boolean {
+  if (!own() || !id) return false;
+  const rows = Object.prototype.hasOwnProperty.call(COMPILED, kind) ? COMPILED[kind] : null;
+  if (!rows) return false;
+  for (let i = 0; i < rows.length; i++) if (rows[i].id === id) return true;
   return false;
 }
 
@@ -141,12 +178,12 @@ export function validate(kind: Kind, id: string, data: Record<string, unknown>):
       }
       return p;
     }
-    case "subprocessor": {
-      const p: string[] = [];
-      if (!has(data.name)) p.push("name is required");
-      if (!has(data.purpose)) p.push("purpose is required — a name alone says nothing");
-      return p;
-    }
+    // The SAME module the build gate runs, so an authored party is held to the
+    // rule a committed one is: it must take a role from the closed pair, say
+    // what customer data reaches it, and — if it is a processor — say where it
+    // is and under which terms. A name and a sentence is not a disclosure.
+    case "subprocessor":
+      return checkSubprocessors([Object.assign({}, data, { id: id })]) as string[];
     case "policy":
       return has(data.title) ? [] : ["title is required"];
     case "faq": {
@@ -199,12 +236,12 @@ export function write(
   let key = SINGLE[k] ? "" : str(id) || newId();
   delete data.id;
 
-  if (k === "control" && baseline(key)) {
+  if (governed(k, key)) {
     return {
       ok: false,
       status: 409,
       message:
-        "control " + key + " is part of this deployment's own inventory, which is " +
+        k + " " + key + " is part of this deployment's own inventory, which is " +
         "governed in git and cannot be authored through the API",
     };
   }
@@ -225,12 +262,12 @@ export function write(
 export function remove(kind: string, id: string): { ok: boolean; status: number; message: string } {
   if (!isKind(kind)) return { ok: false, status: 404, message: "no trust section " + kind };
   const k = kind as Kind;
-  if (k === "control" && baseline(id)) {
+  if (governed(k, id)) {
     return {
       ok: false,
       status: 409,
       message:
-        "control " + id + " is part of this deployment's own inventory and is removed " +
+        k + " " + id + " is part of this deployment's own inventory and is removed " +
         "by a commit, not by a request",
     };
   }

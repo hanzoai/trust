@@ -6,5 +6,6 @@
 
 export declare function checkFrameworks(frameworks: unknown): [string[], Set<string>];
 export declare function checkControls(input: unknown, clauseIndex: Set<string>): string[];
-export declare function check(controls: unknown, frameworks: unknown): string[];
-export declare function assertValid(controls: unknown, frameworks: unknown): void;
+export declare function checkSubprocessors(input: unknown): string[];
+export declare function check(controls: unknown, frameworks: unknown, subprocessors?: unknown): string[];
+export declare function assertValid(controls: unknown, frameworks: unknown, subprocessors?: unknown): void;

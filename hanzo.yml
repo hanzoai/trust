@@ -27,6 +27,28 @@ test:
   - name: embed
     run: go build ./... && go vet ./...
 
+  # What a visitor's browser actually reaches, measured against what the
+  # subprocessor list declares. The page says no advertising or analytics tag
+  # runs on a Hanzo surface and that every third party reached is disclosed;
+  # both are facts about the LIVE surfaces, so both are measured on every
+  # release rather than remembered.
+  #
+  # The surfaces are named HERE and not in the tool. Which hosts this
+  # deployment serves is deployment configuration — a default list compiled
+  # into the tool would be a second copy of it, and the copy that goes stale is
+  # always the one nobody is looking at. A surface added to the estate is added
+  # to this line, and until it is, the page does not speak for it.
+  #
+  # It fails the run on a surface it cannot read, deliberately: a claim about
+  # what a page loads is not one we can keep making while nobody can load it.
+  - name: surface
+    run: |
+      node bin/surface.test.mjs
+      node bin/surface.mjs \
+        hanzo.ai hanzo.works hanzo.codes hanzoskills.com hanzo.ventures \
+        hanzo.team hanzo.app hanzo.bot hanzo.chat hanzo.agency hanzo.id \
+        docs.hanzo.ai blog.hanzo.ai status.hanzo.ai trust.hanzo.ai
+
   # NO copy gate here. certclaims matters more to this repo than to any other —
   # it names three frameworks on nearly every page it serves, and the bundle is
   # a tracked .js the gate reads, inventory prose included — but the shared

@@ -35,7 +35,11 @@ restate a control the build gate approved.
 
 ```
 controls.json      the deployment's own inventory — gated in git
+subprocessors.json the deployment's own disclosure — gated in git, same shape of rule
 frameworks.json    the clause universes — the DENOMINATOR of every count
+bin/
+  surface.mjs      what a browser REACHES, measured against what we disclose
+  surface.test.mjs its arithmetic, over the same harness the bundle suite uses
 embed.go           //go:embed goja/bundle.js, std-lib only; Version, Bundle(), Schema
 goja/
   check.mjs        the rules: schema + the claim ban. ONE module, TWO callers —
@@ -136,16 +140,106 @@ Nothing emits a boolean. There is no "compliant" field and there will not be one
 
 A control belongs to one of eight groups — `infrastructure`, `data`, `access`,
 `network`, `endpoint`, `corporate`, `product`, `incident` — a closed vocabulary,
-because the page renders one column per group and an unrecognised ninth would
-render nowhere. **Three of the eight are empty in our own inventory** (endpoint,
-product, incident) and the page shows them empty rather than hiding them: a group
-we assert nothing in is a fact worth publishing.
+because the page renders one tile per group and an unrecognised ninth would
+render nowhere. All eight are answered now; three of them (endpoint, product,
+incident) were empty, and what filled them is worth knowing because it was not
+new work.
+
+**Two of the three were mechanisms nobody had inventoried.** `product` is the
+shared pipeline's own refusals — the copy gate, the unresolved-merge gate, the
+build-argument gate — each a script in `hanzoai/ci/bin` that exits non-zero
+ahead of every build, which is a control with a test by construction. `incident`
+is the status plane: a prober per endpoint and a public read with no credential.
+Both existed and had simply never been written down, which is the ordinary case
+and the reason an empty group is worth rendering rather than hiding.
+
+**One was genuinely absent and stayed absent.** Nothing consults the state of the
+machine a person signs in from, so `endpoint.posture` names the place in the
+sign-in flow where such a signal would be read and records that none is. An
+absent control never moves a count; it names the clause it would answer and
+reports the gap. Filling a group by inventing a control would have been the one
+move this repo exists to refuse.
+
+## Who else touches the data
+
+`subprocessors.json` is `controls.json` one section over and every structural
+argument carries: compiled into the bundle, gated by `check.mjs` at build time,
+folded with a tenant's own rows by `center.parties()`, and unreachable from any
+request. Adding a party is a commit — a party that can read customer data is not
+something a request should be able to add or remove.
+
+**`role` is the disclosure, and the schema is what stops it being left implied.**
+A `processor` receives or can reach customer data and must say WHAT it receives,
+WHERE it is and under WHICH terms — the three a reviewer asks, all required, so
+a party cannot be filed without answering them. A `vendor` is a party we buy from
+that no customer data reaches, and must still say so in words: an advertising
+platform is a purchase, not a route data travels, and "none, and here is why" is
+a claim where a blank field is not one. The claim ban applies here too, because a
+party's own marketing is the likeliest place a status claim gets copied in, and
+repeating one is making it.
+
+`governed(kind, id)` is ONE predicate over both compiled-in sections. The control
+guard and the party guard were the same question and a second copy is how the two
+come to disagree about what "ours" means.
+
+## What a browser actually reaches
+
+`bin/surface.mjs` measures the half of the disclosure nobody has to take on
+trust. It loads each surface as a browser would and asks two questions:
+
+1. no advertising or product-analytics tag may be REACHED — a denylist, narrow
+   and loud;
+2. any OTHER third party reached must be declared here as an `evidence[].origin`.
+
+The second is what stops the list going stale: a party added to a page is a party
+added to the disclosure, in the same change, or there is no release.
+
+**Reached is not the same as present, and both halves are needed.** A tag sitting
+in markup behind an enforced policy that omits its origin is never fetched, so
+counting it reports a leak that does not happen; a policy sent `-Report-Only`
+enforces nothing, so a page carrying only that permits everything however strict
+it reads. Measured on the fleet, both errors are live — most surfaces carry the
+edge-inserted page-timing script in their markup and refuse it, and one carries a
+report-only policy and runs it. Neither a markup scan nor a header scan would
+have got that right on its own.
+
+The measure is split for the same reason: a TAG is a fetch, and a URL in an
+inline script may be a fetch or a link with nothing to tell them apart — so the
+precise measure decides the disclosure rule, and the broad one decides the
+denylist, where over-reporting costs a sentence and under-reporting costs the
+claim. The ordinary way a tag gets installed is a script that builds a script.
+
+**The surfaces are named in `hanzo.yml`, not in the tool.** Which hosts a
+deployment serves is deployment configuration, and a default list compiled in
+would be a second copy of it. The cost is stated rather than hidden: the gate
+fails on a surface it cannot read, so a fleet outage reds this repo's pipeline.
+That is the intended direction — a claim about what a page loads is not one to
+keep making while nobody can load it — but it is a real coupling and worth
+knowing before it surprises somebody.
+
+## Marks
+
+`site/scripts/marks.mjs` generates `site/components/marks.ts` from simple-icons
+(CC0-1.0), the one source, under `hanzo.ai/scripts/gen-marks.mjs`'s policy: one
+table is the whole provenance record, pin the current release and take what it
+ships, and a party the set does not carry gets a monogram plate. Never a
+hand-drawn substitute — a plate that says nothing is honest, and a look-alike is
+a claim about somebody else's brand. Eleven parties have a mark and five do not,
+each recorded with its reason. The publishers of the three frameworks have none
+either, so they wear plates beside their coverage figures.
+
+The OUTPUT differs from hanzo.ai's and the reason is the deployment: that page
+serves files out of `public/`, and this one is a static export whose enforced
+policy is `img-src 'self' data:`. So the geometry is emitted as a module of path
+data and inlined — same bytes, carried a way the page can render.
 
 ## What the tests hold
 
-`node goja/test/run.mjs` — 95 cases, all against the built `bundle.js` loaded in
+`node goja/test/run.mjs` — 104 cases, all against the built `bundle.js` loaded in
 a `node:vm` with only the globals the Go host provides, including a model of the
-tenant store. Synthetic inventories are built through the same `build.mjs`, so
+tenant store. `node bin/surface.test.mjs` is 11 more over the gate's own
+arithmetic, on the same harness: the cases that decide a verdict, each written so
+that getting it backwards fails. Synthetic inventories are built through the same `build.mjs`, so
 the arithmetic under test is the artifact, not a second implementation.
 
 Two of them pin the HOST CONTRACT rather than behaviour, because the host ships

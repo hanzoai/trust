@@ -9,6 +9,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@hanzo/design": "^0.5.21",
     "@hanzo/gui": "8.1.1",
     "@hanzo/logo": "^1.0.20",
     "@hanzo/ui": "8.2.2",

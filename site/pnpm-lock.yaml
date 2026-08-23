@@ -8,6 +8,9 @@ importers:
 
   .:
     dependencies:
+      '@hanzo/design':
+        specifier: ^0.5.21
+        version: 0.5.21
       '@hanzo/gui':
         specifier: 8.1.1
         version: 8.1.1(react-dom@19.2.8(react@19.2.8))(react-native@0.87.0(@babel/core@7.29.7)(@react-native/metro-config@0.87.0(@babel/core@7.29.7))(@types/react@19.2.18)(react@19.2.8))(react@19.2.8)
@@ -438,8 +441,8 @@ packages:
       '@hanzo/gui': '>=7.2.2'
       react: '>=19'
 
-  '@hanzo/design@0.5.17':
-    resolution: {integrity: sha512-jkYV9Tcz8NC2g0aOetGvJTMoFA3Z4+m2Aet23Dzd5X78Zgk56rpYy0R5SMO0MMUrYYIyGSQ62332KG9S4q5aXQ==}
+  '@hanzo/design@0.5.21':
+    resolution: {integrity: sha512-E2g6DZCn2IUf2AQKqPMwlVV5fz2wvIpAagFRLx33gIsJfmpyubFnx0LINjFs7UoMI1ajnwSa73k7rPteVSemUw==}
     hasBin: true
 
   '@hanzo/event@0.3.34':
@@ -2885,7 +2888,7 @@ snapshots:
 
   '@hanzo/appearance@0.2.2(react@19.2.8)':
     dependencies:
-      '@hanzo/design': 0.5.17
+      '@hanzo/design': 0.5.21
       react: 19.2.8
 
   '@hanzo/brand@1.4.6(react@19.2.8)':
@@ -2903,7 +2906,7 @@ snapshots:
       - react-dom
       - react-native-svg
 
-  '@hanzo/design@0.5.17': {}
+  '@hanzo/design@0.5.21': {}
 
   '@hanzo/event@0.3.34(react@19.2.8)':
     dependencies:
@@ -3005,7 +3008,7 @@ snapshots:
       '@hanzo/appearance': 0.2.2(react@19.2.8)
       '@hanzo/brand': 1.4.6(react@19.2.8)
       '@hanzo/data': 1.2.4(@hanzo/gui@8.1.1(react-dom@19.2.8(react@19.2.8))(react-native@0.87.0(@babel/core@7.29.7)(@react-native/metro-config@0.87.0(@babel/core@7.29.7))(@types/react@19.2.18)(react@19.2.8))(react@19.2.8))(react-dom@19.2.8(react@19.2.8))(react-native-svg@15.15.5(react-native@0.87.0(@babel/core@7.29.7)(@react-native/metro-config@0.87.0(@babel/core@7.29.7))(@types/react@19.2.18)(react@19.2.8))(react@19.2.8))(react@19.2.8)
-      '@hanzo/design': 0.5.17
+      '@hanzo/design': 0.5.21
       '@hanzo/gui': 8.1.1(react-dom@19.2.8(react@19.2.8))(react-native@0.87.0(@babel/core@7.29.7)(@react-native/metro-config@0.87.0(@babel/core@7.29.7))(@types/react@19.2.18)(react@19.2.8))(react@19.2.8)
       '@hanzo/logo': 1.0.20(react@19.2.8)
       '@hanzo/products': 0.2.5(@hanzogui/lucide-icons-2@8.1.1(react-dom@19.2.8(react@19.2.8))(react-native-svg@15.15.5(react-native@0.87.0(@babel/core@7.29.7)(@react-native/metro-config@0.87.0(@babel/core@7.29.7))(@types/react@19.2.18)(react@19.2.8))(react@19.2.8))(react@19.2.8))(react@19.2.8)

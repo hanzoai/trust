@@ -14,11 +14,24 @@
    faces DataTable typesets numeric cells with. It travels with the components. */
 @import '@hanzo/ui/styles/motion.css';
 
+/* Zen, the one family. @hanzo/design ships both variable faces and declares them,
+   so this import is the whole of it — no binary is vendored here and a face update
+   arrives with the package.
+
+   It follows the identity, and that ORDER is the rule rather than tidiness:
+   theme.css sets --font-sans and --font-mono to Geist itself, at bare :root. Two
+   equal declarations of one property, so the later file wins and Zen is only the
+   later file while this line stays below. Swap the two and every surface quietly
+   goes back to asking for a face nothing loads. */
+@import '@hanzo/design/tokens/fonts.css';
+
 :root {
-  /* next/font binds Geist in app/layout.tsx; theme.css reads exactly these two
-     names, so nothing downstream ever states a family. */
-  --font-geist-sans-provided: var(--geist-sans);
-  --font-geist-mono-provided: var(--geist-mono);
+  /* theme.css resolves its families through exactly these two names, so pointing
+     them at the role tokens is the whole of the wiring and nothing downstream ever
+     states a family. The `-geist-` in the name is @hanzo/ui's spelling, not a face
+     this site asks for. */
+  --font-geist-sans-provided: var(--font-sans);
+  --font-geist-mono-provided: var(--font-mono);
 
   --head: 3.5rem;
 }

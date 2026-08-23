@@ -1,14 +1,11 @@
 import './global.css';
 import type { Metadata } from 'next';
 import type { ReactNode } from 'react';
-import { Geist, Geist_Mono } from 'next/font/google';
 import { Providers } from './providers';
 
-// Geist is the Hanzo identity's typeface. theme.css reads `--font-geist-*-provided`
-// and resolves its own family variables to whatever these bind, so binding them
-// here is the whole of the wiring and no component names a family.
-const sans = Geist({ subsets: ['latin'], variable: '--geist-sans', display: 'swap' });
-const mono = Geist_Mono({ subsets: ['latin'], variable: '--geist-mono', display: 'swap' });
+// Zen is the one family, and global.css is where it is bound: @hanzo/design ships
+// the faces and declares them, and the two `--font-geist-*-provided` names theme.css
+// reads are pointed at the role tokens there. Nothing about the typeface is here.
 
 export const metadata: Metadata = {
   title: 'Trust — Hanzo',
@@ -30,7 +27,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
     // is already the dark ground — `dark` is what @hanzo/ui's tokens key off,
     // `t_dark` is what gui resolves `$color…` through. Providers keeps writing
     // them from one state; this is what the reader sees before any of it runs.
-    <html lang="en" className={`dark t_dark ${sans.variable} ${mono.variable}`} suppressHydrationWarning>
+    <html lang="en" className="dark t_dark" suppressHydrationWarning>
       <body>
         <Providers>{children}</Providers>
       </body>

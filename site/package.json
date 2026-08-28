@@ -2,17 +2,17 @@
   "name": "@hanzo/trust-site",
   "version": "0.1.0",
   "private": true,
-  "description": "trust.hanzo.ai \u2014 the trust centre, prerendered shell over a runtime read of /v1/trust",
+  "description": "trust.hanzo.ai — the trust centre, prerendered shell over a runtime read of /v1/trust",
   "scripts": {
     "dev": "next dev --port 3005",
     "build": "next build",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@hanzo/design": "^0.5.21",
-    "@hanzo/gui": "8.1.1",
-    "@hanzo/logo": "^1.0.20",
-    "@hanzo/ui": "^8.3.3",
+    "@hanzo/design": "0.5.24",
+    "@hanzo/gui": "8.3.0",
+    "@hanzo/logo": "1.0.26",
+    "@hanzo/ui": "8.25.0",
     "@hanzogui/config": "8.1.1",
     "@hanzogui/lucide-icons-2": "8.1.1",
     "@hanzogui/next-theme": "8.1.1",

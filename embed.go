@@ -23,7 +23,7 @@
 //     serves /v1/trust/*. The Go host runs it in goja, calling
 //     globalThis.handle({route,method,params,query,orgId,body}) per request.
 //   - Schema is the per-tenant DDL the host runs when a tenant's database first
-//     opens. It lives here, beside the bundle whose SQL is written against it,
+//     opens, written for SQLite and PostgreSQL alike. It lives here, beside the bundle whose SQL is written against it,
 //     because a schema in one repo and the statements in another is how the two
 //     come to disagree about a column.
 //
@@ -57,7 +57,7 @@ import _ "embed"
 // became a product: per-tenant storage, the authoring surface, and the public
 // door. The host contract gained three required globals there, which is why it
 // was a minor and not a patch — an older host cannot run this bundle.
-const Version = "0.2.4"
+const Version = "0.2.5"
 
 //go:embed goja/bundle.js
 var bundle []byte
@@ -72,7 +72,7 @@ func Bundle() ([]byte, error) {
 }
 
 // Schema is the per-tenant DDL, run idempotently when an organization's
-// database first opens.
+// database first opens, on SQLite and on PostgreSQL alike.
 //
 // ONE table. A trust centre is small, read-mostly and page-shaped — a profile,
 // some controls, some documents, a subprocessor list, a few policies, an FAQ, a
@@ -85,17 +85,25 @@ func Bundle() ([]byte, error) {
 // There is no org column, and that is the isolation argument: the file IS the
 // tenant. A query that could name another organization would need a column to
 // name it in, and there is not one.
-const Schema = `
+//
+// bytewise is the collation of an ordered text column in the engine the DDL is
+// for: records list by (ord, id), and SQLite orders text by its bytes where
+// PostgreSQL orders it by the database's collation, so the host passes the clause
+// that makes the second do what the first does (`COLLATE "C"`, and nothing for
+// SQLite). It is a parameter and not a branch because this module knows no engine.
+func Schema(bytewise string) string {
+	return `
 CREATE TABLE IF NOT EXISTS record (
   kind    TEXT    NOT NULL,
-  id      TEXT    NOT NULL,
-  ord     INTEGER NOT NULL DEFAULT 0,
+  id      TEXT    NOT NULL ` + bytewise + `,
+  ord     BIGINT  NOT NULL DEFAULT 0,
   data    TEXT    NOT NULL,
-  updated INTEGER NOT NULL,
+  updated BIGINT  NOT NULL,
   PRIMARY KEY (kind, id)
 );
 CREATE INDEX IF NOT EXISTS record_kind ON record (kind, ord, id);
 `
+}
 
 // errEmptyBundle is returned if the embed produced no bytes (a build that forgot
 // to run goja/build.mjs). Fail loud rather than mount an empty bundle.

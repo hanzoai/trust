@@ -40,7 +40,7 @@ frameworks.json    the clause universes — the DENOMINATOR of every count
 bin/
   surface.mjs      what a browser REACHES, measured against what we disclose
   surface.test.mjs its arithmetic, over the same harness the bundle suite uses
-embed.go           //go:embed goja/bundle.js, std-lib only; Version, Bundle(), Schema
+embed.go           //go:embed goja/bundle.js, std-lib only; Version, Bundle(), Schema(bytewise)
 goja/
   check.mjs        the rules: schema + the claim ban. ONE module, TWO callers —
                    build.mjs runs it before esbuild, and the bundle imports it so
@@ -69,7 +69,10 @@ changelog, a risk sheet, none of which join. Eight tables would be eight
 migrations, eight reads and eight tests for one shape with a discriminator. The
 DDL is `embed.go`'s `Schema`, beside the SQL written against it — a schema in one
 repo and the statements in another is how the two come to disagree about a
-column. There is no org column: the FILE is the tenant, so a query that could
+column. The SQL is the dialect SQLite and PostgreSQL share (`$n` placeholders,
+`ON CONFLICT`, `BIGINT`), so one bundle runs on a tenant's file and on a schema of
+hanzo-sql; `Schema(bytewise)` takes the one clause the engines spell differently
+(the ordered `id` column's collation). There is no org column: the FILE is the tenant, so a query that could
 name another organization would need a column to name it in.
 
 **Tier is a property of the ARTIFACT, and it defaults closed.** The line is who

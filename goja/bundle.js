@@ -1109,7 +1109,7 @@ it carries a number`);
   var CONTROLS = define_CONTROLS_default;
   var FRAMEWORKS = define_FRAMEWORKS_default;
   var SUBPROCESSORS = define_SUBPROCESSORS_default;
-  var VERSION = "0.2.4";
+  var VERSION = "0.2.5";
   function ids() {
     const out = [];
     for (const k in FRAMEWORKS) {
@@ -1187,7 +1187,7 @@ it carries a number`);
     const d = db();
     if (!d) return [];
     const rows = d.query(
-      "SELECT kind, id, ord, data, updated FROM record WHERE kind = ? ORDER BY ord ASC, id ASC",
+      "SELECT kind, id, ord, data, updated FROM record WHERE kind = $1 ORDER BY ord ASC, id ASC",
       [kind]
     );
     const out = [];
@@ -1198,7 +1198,7 @@ it carries a number`);
     const d = db();
     if (!d) return null;
     const rows = d.query(
-      "SELECT kind, id, ord, data, updated FROM record WHERE kind = ? AND id = ?",
+      "SELECT kind, id, ord, data, updated FROM record WHERE kind = $1 AND id = $2",
       [kind, id]
     );
     return rows.length ? parse(rows[0]) : null;
@@ -1207,15 +1207,15 @@ it carries a number`);
     const d = db();
     if (!d) throw new Error("trust: no store");
     d.exec(
-      "INSERT INTO record (kind, id, ord, data, updated) VALUES (?, ?, ?, ?, ?) ON CONFLICT(kind, id\
-) DO UPDATE SET ord = excluded.ord, data = excluded.data, updated = excluded.updated",
+      "INSERT INTO record (kind, id, ord, data, updated) VALUES ($1, $2, $3, $4, $5) ON CONFLICT(kin\
+d, id) DO UPDATE SET ord = excluded.ord, data = excluded.data, updated = excluded.updated",
       [kind, id, ord, JSON.stringify(data), at]
     );
   }
   function drop(kind, id) {
     const d = db();
     if (!d) throw new Error("trust: no store");
-    return d.exec("DELETE FROM record WHERE kind = ? AND id = ?", [kind, id]).changes;
+    return d.exec("DELETE FROM record WHERE kind = $1 AND id = $2", [kind, id]).changes;
   }
 
   // src/center.ts

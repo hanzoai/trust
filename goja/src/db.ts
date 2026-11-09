@@ -8,6 +8,11 @@
 //
 //   record(kind, id, ord, data, updated)   PRIMARY KEY (kind, id)
 //
+// The SQL is the dialect SQLite and PostgreSQL share, so the same bundle runs on
+// the file a tenant had and on the schema hanzo-sql gives it: $n placeholders in
+// the order they first appear, INSERT ... ON CONFLICT, nothing the host has to
+// translate.
+//
 // `data` is the record's own JSON. What may be in it is decided by valid.ts,
 // which is the same module the build gate runs, so a control authored through
 // the API is held to the rule a control committed to git is held to.
@@ -26,7 +31,7 @@ export interface Row {
 
 interface Db {
   query: (sql: string, args: unknown[]) => Row[];
-  exec: (sql: string, args: unknown[]) => { changes: number; lastId: number };
+  exec: (sql: string, args: unknown[]) => { changes: number };
 }
 
 declare global {
@@ -111,7 +116,7 @@ export function list(kind: Kind): Record_[] {
   const d = db();
   if (!d) return [];
   const rows = d.query(
-    "SELECT kind, id, ord, data, updated FROM record WHERE kind = ? ORDER BY ord ASC, id ASC",
+    "SELECT kind, id, ord, data, updated FROM record WHERE kind = $1 ORDER BY ord ASC, id ASC",
     [kind],
   );
   const out: Record_[] = [];
@@ -123,7 +128,7 @@ export function get(kind: Kind, id: string): Record_ | null {
   const d = db();
   if (!d) return null;
   const rows = d.query(
-    "SELECT kind, id, ord, data, updated FROM record WHERE kind = ? AND id = ?",
+    "SELECT kind, id, ord, data, updated FROM record WHERE kind = $1 AND id = $2",
     [kind, id],
   );
   return rows.length ? parse(rows[0]) : null;
@@ -133,7 +138,7 @@ export function put(kind: Kind, id: string, ord: number, data: unknown, at: numb
   const d = db();
   if (!d) throw new Error("trust: no store");
   d.exec(
-    "INSERT INTO record (kind, id, ord, data, updated) VALUES (?, ?, ?, ?, ?) " +
+    "INSERT INTO record (kind, id, ord, data, updated) VALUES ($1, $2, $3, $4, $5) " +
       "ON CONFLICT(kind, id) DO UPDATE SET ord = excluded.ord, data = excluded.data, updated = excluded.updated",
     [kind, id, ord, JSON.stringify(data), at],
   );
@@ -142,5 +147,5 @@ export function put(kind: Kind, id: string, ord: number, data: unknown, at: numb
 export function drop(kind: Kind, id: string): number {
   const d = db();
   if (!d) throw new Error("trust: no store");
-  return d.exec("DELETE FROM record WHERE kind = ? AND id = ?", [kind, id]).changes;
+  return d.exec("DELETE FROM record WHERE kind = $1 AND id = $2", [kind, id]).changes;
 }

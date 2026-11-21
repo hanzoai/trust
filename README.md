@@ -1,5 +1,7 @@
 # hanzoai/trust
 
+[![Open in Hanzo](https://hanzo.app/badges/open-in-hanzo.svg)](https://hanzo.app/dev/open?repo=github.com/hanzoai/trust&ref=main&action=open) [![Edit with Hanzo](https://hanzo.app/badges/edit-with-hanzo.svg)](https://hanzo.app/dev/open?repo=github.com/hanzoai/trust&ref=main&action=edit) [![Deploy with Hanzo](https://hanzo.app/badges/deploy-with-hanzo.svg)](https://hanzo.app/dev/open?repo=github.com/hanzoai/trust&ref=main&action=deploy)
+
 Compliance as data. A control inventory you can diff, coverage computed from it,
 and evidence pulled from the audit trail — served by the unified `hanzoai/cloud`
 binary at `/v1/trust/*`.
